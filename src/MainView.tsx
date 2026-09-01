@@ -1672,8 +1672,8 @@ function Settings({
       <section style={sectionStyle}>
         <label style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, cursor: autoLaunch === null ? "default" : "pointer" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            <span style={{ fontSize: 14, fontWeight: 500 }}>{t("Settings.autoLaunchLabel")}</span>
-            <span style={{ fontSize: 12, color: COLORS.muted }}>{t("Settings.autoLaunchDescription")}</span>
+            <span style={{ fontSize: TYPE.body, fontWeight: 500 }}>{t("Settings.autoLaunchLabel")}</span>
+            <span style={{ fontSize: TYPE.label, color: COLORS.muted }}>{t("Settings.autoLaunchDescription")}</span>
           </div>
           <Switch checked={autoLaunch ?? false} disabled={autoLaunch === null} onChange={toggleAutoLaunch} />
         </label>
