@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <!--
+      Restricts the renderer to the hosts it actually talks to (Data
+      Dragon/Community Dragon assets, riftcompass.com's API, Google
+      Fonts, and Vercel Blob for account avatars uploaded on the web) —
+      script-src keeps 'unsafe-eval' because Vite's dev-mode
+      HMR client needs it; the production build doesn't use eval, so
+      this is a floor, not a ceiling, on tightening it further.
+      style-src keeps 'unsafe-inline' for the exact same reason: Vite's
+      dev server injects every CSS module (global.css included) as an
+      inline <style> tag via JS, not an external file, and CSP silently
+      blocks that tag from actually applying with no console warning —
+      reproduced live 2026-09-01 (the whole app rendered at ~500px tall
+      instead of filling the window because html/body/#root's real
+      height:100% rule in global.css was present in the DOM but inert,
+      confirmed via `style.sheet === null` on the injected tag). The
+      production build bundles CSS into a real same-origin .css file
+      loaded via <link>, which 'self' alone already allows — this bug
+      and the loosened directive are both dev-only in effect.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+        script-src 'self' 'unsafe-eval';
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src https://fonts.gstatic.com;
+        img-src 'self' data: https://ddragon.leagueoflegends.com https://raw.communitydragon.org https://cdn.communitydragon.org https://*.public.blob.vercel-storage.com;
+        connect-src 'self' https://ddragon.leagueoflegends.com https://raw.communitydragon.org https://riftcompass.com;"
+    />
+    <title>RiftCompass</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Russo+One&family=Manrope:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

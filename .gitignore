@@ -1,0 +1,10 @@
+node_modules/
+dist/
+dist-electron/
+release/
+
+# Local dev/runtime state — never real secrets in the repo, but these
+# hold a real DPAPI-encrypted session token and locale-dependent settings
+# that belong to whoever ran the app, not to source control.
+*.log
+.DS_Store

@@ -1,0 +1,19 @@
+appId: com.riftcompass.desktop
+productName: RiftCompass
+directories:
+  output: release
+# Both native deps (@primno/dpapi, koffi) ship prebuilt binaries for the
+# running Node ABI and don't need node-gyp rebuilding for Electron's ABI
+# — electron-builder's default rebuild step tries to invoke node-gyp on
+# them anyway and fails (missing node-addon-api, which they don't use).
+npmRebuild: false
+files:
+  - dist/**
+  - dist-electron/**
+  - package.json
+win:
+  target: nsis
+  icon: build/icons/icon.ico
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

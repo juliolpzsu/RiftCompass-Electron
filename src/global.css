@@ -1,0 +1,242 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+  background: transparent;
+}
+
+body {
+  font-family: "Manrope", -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #f7f3f5;
+  user-select: none;
+  /* This app is dark-only (no light theme to opt into) — without this,
+     Chromium renders every *native* form control (number-input spinner
+     arrows, the <select> popup) with its light-mode widget chrome by
+     default, regardless of how dark the surrounding custom UI is. */
+  color-scheme: dark;
+}
+
+.rc-heading {
+  font-family: "Russo One", "Manrope", sans-serif;
+  font-weight: 400;
+}
+
+/* border-radius on ::-webkit-scrollbar-thumb renders as a hard square
+   regardless of radius value on this Chromium/Windows theme combination
+   (a known Chromium/Fluent-scrollbar limitation on recent Windows).
+   Rather than fight a shape Chromium won't draw, the scrollbar is hidden
+   entirely — scrolling itself still works fully via wheel/trackpad,
+   `overflow` isn't touched anywhere, only the visual indicator is gone. */
+* {
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Cooldown Compare's ability-haste field has a custom always-visible
+   up/down stepper replacing the native number-input spinner — but inline
+   `WebkitAppearance: "textfield"` doesn't suppress the native one (this
+   Chromium only honors the removal via the spin-button pseudo-elements
+   themselves), and inline React styles can't target pseudo-elements at
+   all, hence a real class. */
+.rc-no-spinner::-webkit-inner-spin-button,
+.rc-no-spinner::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Map Editor's color popover: swatch hover feedback and the rainbow hue
+   slider (range inputs can only be styled via pseudo-elements, which
+   inline React styles can't reach). */
+.rc-swatch {
+  transition: transform 100ms ease, border-color 100ms ease;
+}
+.rc-swatch:hover {
+  transform: scale(1.15);
+}
+.rc-hue-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+  outline: none;
+  cursor: pointer;
+}
+.rc-hue-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+/* Custom on-brand switch, replacing the raw OS checkbox in Settings —
+   the rest of the app's controls (pill buttons, inputs) are all custom-
+   styled, so a native checkbox stood out. Real <input type="checkbox">
+   underneath (just visually hidden) so keyboard toggling, click target,
+   and screen-reader semantics all still come from the browser for free. */
+.rc-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.rc-switch input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.rc-switch input:disabled {
+  cursor: default;
+}
+
+.rc-switch-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.rc-switch input:checked + .rc-switch-track {
+  background: rgba(230, 57, 119, 0.4);
+  border-color: #e63977;
+}
+
+.rc-switch input:disabled + .rc-switch-track {
+  opacity: 0.5;
+}
+
+.rc-switch-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #f7f3f5;
+  transition: transform 0.15s ease, background 0.15s ease;
+  pointer-events: none;
+}
+
+.rc-switch input:checked ~ .rc-switch-thumb {
+  transform: translateX(16px);
+  background: #e63977;
+}
+
+.rc-switch input:focus-visible ~ .rc-switch-thumb {
+  box-shadow: 0 0 0 2px #0c0a0d, 0 0 0 4px #e63977;
+}
+
+/* Every button in this app (tool cards, pills, primary/secondary actions,
+   icon buttons — ~50 call sites across every screen, all plain <button>
+   with inline colors) had zero hover/active/focus feedback: nothing here
+   ever set a :hover style, native or otherwise. filter/box-shadow are the
+   only levers a single shared rule can use safely — background/border
+   are set inline per button with real design-token colors, and inline
+   always wins that fight over a stylesheet rule, hover or not.
+   `transition` here also covers every pill/tab button's inline
+   background/border/color swap on selection (rank tier, role filter,
+   category filters...) — those set new inline values on click with no
+   transition of their own, so this shared rule is what makes the color
+   change glide instead of snapping (Julio, 2026-09-01: quiere más
+   sensación de fluidez). `transform` adds real press feedback (a button
+   should feel like it heard the click), scale kept subtle per Emil
+   Kowalski's guidance (0.95-0.98) so it reads as a press, not a wobble. */
+button:not(:disabled) {
+  transition: filter 120ms ease, background 120ms ease, border-color 120ms ease, color 120ms ease, transform 120ms ease-out;
+}
+
+button:not(:disabled):hover {
+  filter: brightness(1.15);
+}
+
+button:not(:disabled):active {
+  filter: brightness(0.9);
+  transform: scale(0.97);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #0c0a0d, 0 0 0 4px #e63977;
+}
+
+/* Tools-index cards specifically: this one already declared a
+   border-color/transform transition (see MainView.tsx) that nothing ever
+   triggered — no :hover rule existed anywhere to change either property.
+   Finishing that instead of just letting the generic brightness hover
+   above cover it too, since a flagship "pick a tool" grid earns a real
+   lift, not just a brightness bump. */
+.rc-tool-card {
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.rc-tool-card:not(:disabled):hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.6);
+}
+
+/* Specificity note: the generic `button:not(:disabled):active` rule above
+   (0,2,1) would otherwise win over a plain `.rc-tool-card:active` (0,2,0)
+   and replace the hover lift with a flat scale on click instead of
+   combining them — `button.rc-tool-card` adds the type selector so this
+   wins (0,3,1) and the press reads as "pressing down while still lifted",
+   not a jump. */
+button.rc-tool-card:not(:disabled):active {
+  transform: translateY(-3px) scale(0.97);
+}
+
+/* Main content area's view switch (Herramientas grid <-> a tool <->
+   perfil <-> comparar <-> ajustes): previously an instant hard swap with
+   zero transition, the most-repeated navigation in the app and the main
+   thing that read as abrupt (Julio, 2026-09-01: quiere más "sensación de
+   fluidez"). A one-shot mount animation (keyframes, not a transition —
+   there's nothing to interrupt, the old view is simply gone) replays
+   every time MainView.tsx remounts this wrapper under a new `key`. Kept
+   short (this happens a few times per session, not hundreds — see the
+   animation-decision framework: "occasional" gets a standard animation,
+   not a showpiece) and ease-out since the content is entering. */
+@keyframes rc-view-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rc-view-enter {
+  animation: rc-view-enter 220ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rc-view-enter {
+    animation: none;
+  }
+}
