@@ -47,7 +47,6 @@ import {
 import type { ProfileApiResponse, RecentMatchSummary, RiotLeagueEntry } from "../lib/profile-types";
 import type { SavedProfileWithRank } from "../riftcompass";
 import {
-  PLATFORMS,
   parseRiotId,
   type FetchProfileError,
   fetchProfile,
@@ -55,6 +54,7 @@ import {
   type ProfileTarget,
   useSavedProfiles,
   DropdownMenu,
+  PlatformSelect,
   CompareSavedProfilePicker,
   AXIS_LABEL_KEY,
   cardStyle,
@@ -185,13 +185,7 @@ function ProfileSearchForm({ onSearch }: { onSearch: (target: ProfileTarget) => 
       <p style={{ color: COLORS.muted, fontSize: 13, marginTop: 6 }}>{t("ProfileSearch.intro")}</p>
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 20 }}>
         <div style={{ display: "flex", gap: 8 }}>
-          <select value={platform} onChange={(e) => setPlatform(e.target.value)} style={{ ...selectStyle, flexShrink: 0, width: 100 }}>
-            {PLATFORMS.map((p) => (
-              <option key={p} value={p}>
-                {PLATFORM_LABELS[p]}
-              </option>
-            ))}
-          </select>
+          <PlatformSelect value={platform} onChange={setPlatform} />
           <input
             value={riotId}
             onChange={(e) => setRiotId(e.target.value)}
@@ -1563,13 +1557,7 @@ function SearchAgainBlock({ defaultPlatform, onOpen }: { defaultPlatform: string
     <div>
       <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         <div style={{ display: "flex", gap: 8 }}>
-          <select value={platform} onChange={(e) => setPlatform(e.target.value)} style={{ ...selectStyle, width: 90, flexShrink: 0 }}>
-            {PLATFORMS.map((p) => (
-              <option key={p} value={p}>
-                {PLATFORM_LABELS[p]}
-              </option>
-            ))}
-          </select>
+          <PlatformSelect value={platform} onChange={setPlatform} />
           <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
             <input
               value={riotId}

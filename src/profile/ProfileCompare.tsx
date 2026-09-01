@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
-import { ChevronDown, ChevronRight, RotateCcw, Route, ShieldAlert, Swords, X, type LucideIcon } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ChevronRight, RotateCcw, Route, ShieldAlert, Swords, X, type LucideIcon } from "lucide-react";
 import { ChampionSplashAccent } from "../ChampionSplashAccent";
 import { COLORS, FONT_HEADING, inputStyle } from "../theme";
 import { useI18n } from "../i18n";
-import { PLATFORM_LABELS, formatTierRank } from "../lib/rank-lp";
+import { formatTierRank } from "../lib/rank-lp";
 import {
   computeHeadToHead,
   computeRoadmap,
@@ -21,19 +21,16 @@ import {
 import type { ProfileApiResponse, RecentMatchSummary, RiotLeagueEntry } from "../lib/profile-types";
 import type { SavedProfileWithRank } from "../riftcompass";
 import {
-  PLATFORMS,
   parseRiotId,
   type FetchProfileError,
   fetchProfile,
   errorMessageKey,
   type ProfileTarget,
   useSavedProfiles,
-  DropdownMenu,
-  dropdownOptionStyle,
+  PlatformSelect,
   CompareSavedProfilePicker,
   AXIS_LABEL_KEY,
   cardStyle,
-  selectStyle,
   secondaryButtonStyle,
 } from "./ProfileShared";
 
@@ -181,60 +178,6 @@ export function ProfileCompareEntry() {
   );
 }
 
-// Same portal-based dropdown as CompareSavedProfilePicker above (matching
-// its aesthetic exactly, 2026-09-01) instead of a native <select> — a real
-// OS-rendered dropdown always looks and behaves differently from the rest
-// of this app's custom-styled controls.
-function ComparePlatformSelect({ value, onChange }: { value: string; onChange: (platform: string) => void }) {
-  const [open, setOpen] = useState(false);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-
-  return (
-    <div style={{ position: "relative", flexShrink: 0 }}>
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        style={{
-          ...selectStyle,
-          // Sized to content instead of a fixed width, so no label ("EUNE",
-          // "SEA", ...) can ever crowd the chevron regardless of language
-          // or which platform is picked.
-          width: "auto",
-          minWidth: 64,
-          boxSizing: "border-box",
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          cursor: "pointer",
-        }}
-      >
-        {PLATFORM_LABELS[value] ?? value}
-        <ChevronDown size={14} color={COLORS.muted} style={{ marginLeft: "auto" }} />
-      </button>
-      <DropdownMenu triggerRef={triggerRef} open={open} onClose={() => setOpen(false)} align="left" minWidth={90}>
-        {PLATFORMS.map((p) => (
-          <button
-            key={p}
-            type="button"
-            onClick={() => {
-              onChange(p);
-              setOpen(false);
-            }}
-            style={{
-              ...dropdownOptionStyle,
-              color: p === value ? COLORS.rose : COLORS.text,
-              background: p === value ? `${COLORS.rose}1f` : "none",
-            }}
-          >
-            {PLATFORM_LABELS[p]}
-          </button>
-        ))}
-      </DropdownMenu>
-    </div>
-  );
-}
-
 function CompareSlot({
   label,
   platform,
@@ -276,7 +219,7 @@ function CompareSlot({
         ) : null}
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
-        <ComparePlatformSelect value={platform} onChange={onChangePlatform} />
+        <PlatformSelect value={platform} onChange={onChangePlatform} />
         <div style={{ position: "relative", flex: "1 1 140px", minWidth: 0 }}>
           <input
             value={riotId}
@@ -856,13 +799,7 @@ export function CompareBlock({
       {state.kind === "idle" ? (
         <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 10 }}>
           <div style={{ display: "flex", gap: 8 }}>
-            <select value={platform} onChange={(e) => setPlatform(e.target.value)} style={{ ...selectStyle, width: 90, flexShrink: 0 }}>
-              {PLATFORMS.map((p) => (
-                <option key={p} value={p}>
-                  {PLATFORM_LABELS[p]}
-                </option>
-              ))}
-            </select>
+            <PlatformSelect value={platform} onChange={setPlatform} />
             <div style={{ position: "relative", flex: 1, minWidth: 0 }}>
               <input
                 value={riotId}

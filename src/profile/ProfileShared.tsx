@@ -294,6 +294,62 @@ export const selectStyle: React.CSSProperties = {
   ...inputStyle,
 };
 
+// Custom dropdown matching this app's own control aesthetic, instead of a
+// native <select> — a real OS-rendered dropdown always looks and behaves
+// differently from the rest of this app's custom-styled controls. Was
+// built once for the compare view only (2026-09-01); promoted here so
+// every platform picker in the app (profile search, profile detail,
+// compare) uses the same one instead of a native <select> per call site.
+export function PlatformSelect({ value, onChange }: { value: string; onChange: (platform: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  return (
+    <div style={{ position: "relative", flexShrink: 0 }}>
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        style={{
+          ...selectStyle,
+          // Sized to content instead of a fixed width, so no label ("EUNE",
+          // "SEA", ...) can ever crowd the chevron regardless of language
+          // or which platform is picked.
+          width: "auto",
+          minWidth: 64,
+          boxSizing: "border-box",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          cursor: "pointer",
+        }}
+      >
+        {PLATFORM_LABELS[value] ?? value}
+        <ChevronDown size={14} color={COLORS.muted} style={{ marginLeft: "auto" }} />
+      </button>
+      <DropdownMenu triggerRef={triggerRef} open={open} onClose={() => setOpen(false)} align="left" minWidth={90}>
+        {PLATFORMS.map((p) => (
+          <button
+            key={p}
+            type="button"
+            onClick={() => {
+              onChange(p);
+              setOpen(false);
+            }}
+            style={{
+              ...dropdownOptionStyle,
+              color: p === value ? COLORS.rose : COLORS.text,
+              background: p === value ? `${COLORS.rose}1f` : "none",
+            }}
+          >
+            {PLATFORM_LABELS[p]}
+          </button>
+        ))}
+      </DropdownMenu>
+    </div>
+  );
+}
+
 export const secondaryButtonStyle: React.CSSProperties = {
   display: "flex",
   alignItems: "center",

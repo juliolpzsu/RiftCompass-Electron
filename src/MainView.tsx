@@ -20,7 +20,7 @@ import {
 import { API_BASE_URL } from "./shared/api";
 import { ProfileScreen } from "./profile/ProfileDetail";
 import { ProfileCompareEntry } from "./profile/ProfileCompare";
-import { parseRiotId, type ProfileTarget } from "./profile/ProfileShared";
+import { parseRiotId, PlatformSelect, type ProfileTarget } from "./profile/ProfileShared";
 import { COMPARE_PROFILES_ACCENT, TOOLS, type ToolId, type ToolMeta } from "./tool-meta";
 import { GoldCalculator } from "./tools/GoldCalculator";
 import { WaveTimer } from "./tools/WaveTimer";
@@ -1174,7 +1174,7 @@ function SavedProfileRow({
           fontFamily: "inherit",
         }}
       >
-        {position ? <span style={{ flexShrink: 0, fontSize: 11, fontWeight: 700, color: COLORS.muted }}>#{position}</span> : null}
+        <span style={{ flexShrink: 0, width: 18, fontSize: 11, fontWeight: 700, color: COLORS.muted }}>{position ? `#${position}` : ""}</span>
         <div style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1, gap: 1 }}>
           <span style={{ fontSize: 13, fontWeight: 500, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
             {profile.gameName}
@@ -1375,7 +1375,6 @@ function HeaderProfileSearch({ onSearch }: { onSearch: (target: ProfileTarget) =
   const [platform, setPlatform] = useState("euw1");
   const [riotId, setRiotId] = useState("");
   const [error, setError] = useState(false);
-  const platforms = Object.keys(PLATFORM_LABELS);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -1394,13 +1393,7 @@ function HeaderProfileSearch({ onSearch }: { onSearch: (target: ProfileTarget) =
         {t("ToolsIndex.profileSearch")}
       </span>
       <div style={{ display: "flex", gap: 6 }}>
-        <select value={platform} onChange={(e) => setPlatform(e.target.value)} style={{ ...headerSearchFieldStyle(false), width: 78, flexShrink: 0 }}>
-          {platforms.map((p) => (
-            <option key={p} value={p}>
-              {PLATFORM_LABELS[p]}
-            </option>
-          ))}
-        </select>
+        <PlatformSelect value={platform} onChange={setPlatform} />
         <div style={{ position: "relative" }}>
           <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: COLORS.muted, pointerEvents: "none" }} />
           <input
