@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-Actualizado: 2026-08-30.
+Actualizado: 2026-09-01.
 
 ## Qué funciona (verificado en real)
 
@@ -722,3 +722,89 @@ externo, ver `docs/overwolf-registration.md`) y, cuando llegue, sustituir
 Overwolf para que el overlay se vea también en pantalla completa
 exclusiva — hasta entonces, paridad exacta con lo que ya había en
 Borderless/Windowed.
+
+## Pulido de la pantalla de perfil/comparación y auditoría completa (2026-09-01)
+
+Con el overlay bloqueado en la aprobación de Overwolf/Riot, esta sesión se
+dedicó a pulir la pantalla de perfil y comparación (`src/profile/`) y, a
+petición explícita de Julio, a una auditoría completa de seguridad y
+calidad de código de los dos repos (`RiftCompass-Electron` y
+`RiftCompass-Web`).
+
+- **Calendario de actividad**: navegación real entre meses (botones
+  prev/next, vía el nuevo endpoint `/api/v1/activity-calendar`) en vez de
+  quedarse fijo al mes actual; el mes en curso muestra todos sus días
+  (incluidos los que aún no han llegado, en un tono translúcido para
+  distinguirlos de los ya jugados) en lugar de cortar en el día de hoy.
+  Misma lógica portada a la web.
+- **Botón Comparar**: el popover que abre pasó de una tarjeta a ancho
+  completo en el flujo de la página a un `DropdownMenu` anclado justo
+  debajo del propio botón, con selector de perfiles guardados integrado
+  en el campo de Riot ID. Arreglado de paso un bug real: elegir un
+  perfil guardado desde ese selector cerraba el desplegable en vez de
+  comparar — el desplegable interno (portado a `document.body`, como
+  todos en este archivo) leía como "clic fuera" del desplegable externo
+  pese a estar anidado en el árbol de React; ahora cada `DropdownMenu`
+  lleva un `data-rc-dropdown` que el listener de clic-fuera respeta.
+- **"Buscar de nuevo"**: dejó de abrir una pantalla nueva completa y pasó
+  a ser un popover pequeño anclado al botón, igual que el buscador rápido
+  del menú de Herramientas (`HeaderProfileSearch`).
+- **Layout de la pantalla de perfil**: las tarjetas se reagruparon en
+  filas emparejadas por altura de contenido natural (rango con rango,
+  gráfico compacto con gráfico compacto, tabla alta con calendario alto)
+  en vez de una cuadrícula plana o parejas ad-hoc — sin huecos muertos ni
+  tarjetas más grandes de lo necesario.
+- **Tendencia de rango**: confirmado que ya mostraba LP real (no solo
+  victorias/derrotas) cuando hay ≥2 snapshots propios; el fallback de
+  solo victoria/derrota que se veía en pruebas era el comportamiento
+  correcto para un jugador con <2 snapshots todavía, no un bug.
+
+### Auditoría de seguridad y limpieza de código (2026-09-01)
+
+Repo propio en GitHub creado para este proyecto
+(`github.com/juliolpzsu/RiftCompass-Electron`, privado) — no existía
+hasta ahora; el repo antiguo `RiftCompass-Tauri` (ya retirado desde el
+2026-08-31, ver arriba) se borró de GitHub al confirmarse innecesario.
+
+- **CSP**: `script-src 'unsafe-eval'` (necesario solo para el HMR de Vite
+  en dev) se enviaba también en producción porque vivía en una etiqueta
+  `<meta>` estática de `index.html`, que Vite no transforma por modo.
+  Movida a una cabecera real puesta desde el proceso principal
+  (`applyContentSecurityPolicy` en `electron/main.ts`, vía
+  `session.defaultSession.webRequest.onHeadersReceived`), condicionada a
+  `app.isPackaged` — ahora `unsafe-eval` de verdad solo llega en dev.
+- **Allowlist de IPC**: `electron/preload.ts` reenviaba cualquier nombre
+  de canal a `ipcRenderer.invoke`/`.on` sin comprobarlo contra el
+  allowlist de `CMD`/`EVT` (`src/bridge/commands.ts`) — el allowlist solo
+  se respetaba por convención del lado del renderer, no era una barrera
+  real. Ahora `preload.ts` valida cada canal contra ese mismo allowlist
+  antes de reenviarlo.
+- **Raya larga en textos de UI**: `Settings.calibrateAbilityBarHint`/
+  `calibrateAbilityBarDone` llevaban una raya larga (—) en las 4
+  traducciones, contra la regla del proyecto de no usarlas en texto
+  visible — reformuladas con punto/dos puntos en `en`/`es`/`fr`/`de`.
+- **Estilos duplicados**: `inputStyle`/`pillStyle`/`cardStyle`, repetidos
+  (algunos byte a byte, otros con parámetros distintos) entre
+  `MainView.tsx`, `ProfileScreen.tsx` y varias herramientas, consolidados
+  en `src/theme.ts` como constantes/funciones compartidas.
+- **`ProfileScreen.tsx` (2851 líneas) dividido** en `src/profile/`:
+  `ProfileShared.tsx` (búsqueda/fetch compartidos, `DropdownMenu`,
+  estilos comunes), `ProfileDetail.tsx` (vista de un solo perfil) y
+  `ProfileCompare.tsx` (vista de comparación, incluido `CompareBlock` que
+  `ProfileDetail.tsx` importa para el popover "Comparar" del perfil
+  individual). Verificado en real tras la división (búsqueda, comparación
+  cruzada entre los dos módulos, popover de perfiles guardados) contra
+  producción.
+- **Comentarios estilo diario**: limpiados los que citaban a Julio
+  textualmente con fecha en `ProfileScreen.tsx` (ahora repartido en los 3
+  ficheros de `src/profile/`), `MainView.tsx`, `OverlayView.tsx`,
+  `draft-help.ts`, `lib/profile-analysis.ts`, `electron/main.ts`,
+  `electron/windows.ts` y `tools/MetaTierList.tsx` — se conservó la
+  razón técnica de cada uno (por qué existe una restricción, no quién la
+  pidió ni cuándo), retirando la cita y la fecha.
+
+**Estado**: todo lo anterior verificado con `npm run typecheck` y
+`npm run build` limpios, y una pasada visual en real (vía Chrome contra
+el renderer en `localhost:1421`, con datos reales de producción) tras el
+split de `ProfileScreen.tsx` y la deduplicación de estilos. El pendiente
+real de fondo sigue siendo el mismo: la aprobación de Riot/Overwolf.
