@@ -157,3 +157,49 @@ también aprobación de Riot Games antes de dar acceso a
 `@overwolf/ow-electron*` (ver `docs/overwolf-registration.md`) — hasta
 que llegue, el overlay in-game solo se ve en Borderless/Windowed, no en
 pantalla completa exclusiva real.
+
+## Pendiente: distribución y auto-actualización (2026-09-01)
+
+Ahora mismo `npm run dist` genera un instalador NSIS funcional
+(`release/RiftCompass Setup 0.1.0.exe`) pero nada más: sin comprobación
+de versión, sin publicación a ningún sitio, sin firma. El botón de
+descarga en la web (`DownloadAppButton`) está inerte a propósito hasta
+que esto exista. Camino elegido: `electron-updater` + GitHub Releases
+(el repo ya vive en `juliolpzsu/RiftCompass-Electron`), para que quien ya
+tenga la app instalada la reciba sola en segundo plano, sin volver a
+descargar el instalador a mano — eso solo hace falta para una instalación
+nueva en un equipo que nunca tuvo la app.
+
+- [ ] Añadir `electron-updater` como dependencia y llamar a
+      `autoUpdater.checkForUpdatesAndNotify()` (o flujo propio con aviso
+      discreto en vez del diálogo nativo) desde `electron/main.ts` — al
+      arrancar y, al ser app de bandeja, también en un intervalo
+      periódico.
+- [ ] Añadir bloque `publish` (`provider: github`, owner `juliolpzsu`,
+      repo `RiftCompass-Electron`) a `electron-builder.yml`.
+- [ ] Publicar con `electron-builder --publish always` (necesita
+      `GH_TOKEN`) en vez de `npm run dist` suelto — sube el `.exe` a un
+      Release de GitHub y genera el `latest.yml` que `electron-updater`
+      consulta.
+- [ ] Reactivar `DownloadAppButton` en la web apuntando al asset del
+      último Release de GitHub (o espejado a `riftcompass.com` si no se
+      quiere depender de GitHub cara al usuario final).
+- [ ] Decidir y presupuestar **firma de código** (cert OV/EV, ~100-300€/
+      año) antes de cualquier lanzamiento público — sin firmar, el `.exe`
+      dispara el aviso de SmartScreen "Editor desconocido" en el primer
+      arranque y puede dar falso positivo de algún antivirus. No bloquea
+      seguir desarrollando, sí bloquea distribuir a desconocidos con
+      confianza.
+- [ ] Telemetría de errores (p.ej. Sentry, hay SDK de Electron) antes del
+      lanzamiento público — hoy un crash en el equipo de un usuario real
+      no deja ningún rastro consultable.
+- [ ] Compatibilidad hacia atrás de `/api/v1/*` en la web: el
+      auto-update no es instantáneo (puede haber días de versiones
+      viejas y nuevas conviviendo), así que un cambio en esos endpoints
+      tiene que seguir sirviendo a apps ya instaladas o versionarse, no
+      romperlas sin aviso.
+- [ ] EULA/términos de uso en el instalador — no existe ninguno hoy.
+- [ ] Cuando llegue la aprobación de Overwolf (ver arriba) y se sustituya
+      `createOverlayWindow` por la API real, pensar esa build como una
+      actualización más vía este mismo mecanismo, no como una
+      reinstalación manual pedida a los usuarios.
