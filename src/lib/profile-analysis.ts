@@ -429,12 +429,12 @@ function dateKey(epochMs: number): string {
   return `${year}-${month}-${day}`;
 }
 
-// Whole month, 1st through the last day — including days still to come
-// (2026-09-01, Julio: a calendar that stops at today reads as broken on the
-// 1st of a new month, just one cell in an otherwise-empty grid; the card
-// renders those future days more translucent to tell them apart from real,
-// already-played days, same distinction ActivityCalendarCard draws from
-// each entry's own date against today's).
+// Whole month, 1st through the last day — including days still to come, so
+// the calendar doesn't read as broken on the 1st of a new month (just one
+// cell in an otherwise-empty grid). The card renders those future days
+// more translucent to tell them apart from real, already-played days,
+// same distinction ActivityCalendarCard draws from each entry's own date
+// against today's.
 export function buildActivityGrid(matches: Pick<RecentMatchSummary, "playedAt" | "win">[]): DayActivity[] {
   const byDay = new Map<string, DayActivity>();
   for (const match of matches) {

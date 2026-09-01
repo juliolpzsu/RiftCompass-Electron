@@ -65,11 +65,7 @@ import { CompareBlock } from "./ProfileCompare";
 
 // Riot ID search + single-profile view — same real data as
 // riftcompass.com's own profile page (via the public
-// GET /api/v1/profile/[platform]/[riotId]). Through 2026-08-27 this
-// rendered as its own compact native UI, deliberately not a copy of the
-// web page. Julio, 2026-08-28: "quiero que... muestre los datos tal y
-// como se ven en la web, no hay necesidad de ese otro estilo diferente" —
-// now matches the web profile page's own glass-card look and section set
+// GET /api/v1/profile/[platform]/[riotId]), matching its section set
 // (rank, LP trend + skill radar, activity calendar, role breakdown,
 // champion pool, roadmap, match history), computed from the same payload
 // client-side rather than a copy-pasted DOM.
@@ -314,10 +310,9 @@ function ProfileDetail({
   // React requires every hook to run on every render regardless of state,
   // and this one used to sit after those returns, so it went from unrun
   // (loading) to run (ok) between renders and crashed the whole tree with
-  // "Rendered more hooks than during the previous render" (reproduced live
-  // 2026-08-29, Julio: "al intentar ver un perfil da pantalla en blanco").
-  // Empty string here (state not "ok" yet) is a real, valid version the
-  // hook itself now guards against fetching for.
+  // "Rendered more hooks than during the previous render". Empty string
+  // here (state not "ok" yet) is a real, valid version the hook itself now
+  // guards against fetching for.
   const summonerSpellIcons = useSummonerSpellIcons(state.kind === "ok" ? state.data.ddragonVersion : "");
 
   useEffect(() => {
@@ -468,9 +463,7 @@ function ProfileDetail({
 
       {/* Small popover next to the button, not a full-page takeover — same
           shape as the header's own quick search on the Herramientas screen
-          (MainView.tsx's HeaderProfileSearch) — Julio, 2026-09-01: "no
-          quiero que abra una nueva ventana... que siga siendo un pequeño
-          buscador tal y como hace en el menú". Picking a result calls
+          (MainView.tsx's HeaderProfileSearch). Picking a result calls
           onOpenProfile directly (swaps `target` on the same ProfileScreen,
           same as onOpenProfile everywhere else in this file) instead of
           onSearchAgain's full reset to the standalone search screen — this
@@ -494,12 +487,11 @@ function ProfileDetail({
         />
       </DropdownMenu>
 
-      {/* Anchored to the Comparar button itself (Julio, 2026-09-01: "que
-          la caja de comparar... sea mas pequenia y este justo debajo del
-          boton") — was a full-width card sitting inline in the page flow;
-          same DropdownMenu portal every other popover in this file already
-          uses, just with roomier sizing than the small option-list default
-          since this one holds a real form and a result table. */}
+      {/* Anchored to the Comparar button itself, rather than a full-width
+          card sitting inline in the page flow — same DropdownMenu portal
+          every other popover in this file already uses, just with roomier
+          sizing than the small option-list default since this one holds a
+          real form and a result table. */}
       <DropdownMenu
         triggerRef={compareButtonRef}
         open={compareTarget !== null}
@@ -526,19 +518,16 @@ function ProfileDetail({
       {/* Paired rows, matching the web's own already-refined pairing
           (page.tsx: rank cards together, RankTrend+SkillRadar together,
           Calendar+ChampionOverview together, ChampionPool and Roadmap each
-          full-width alone) instead of ad-hoc pairs — 2026-09-01, Julio:
-          the first two attempts either left ragged gaps between rows (a
-          flat 8-card grid) or oversized cards with dead space inside
-          (stretching a mismatched pair like RankTrend+Calendar to match
-          each other). The web's actual pairing already groups cards whose
-          natural content height is close (a rank card next to another
-          rank card, a compact chart next to another compact chart, a
-          taller grid next to a similarly-tall table) — same real content,
-          same real height, just wider fractions here since the desktop
-          window has more room than a web viewport. Each card's own
-          internal layout (see cardStyle usage below) still centers its
-          content vertically within row's `stretch`, so any residual
-          height difference reads as intentional, not leftover space. */}
+          full-width alone) instead of ad-hoc pairs. The web's pairing
+          groups cards whose natural content height is close (a rank card
+          next to another rank card, a compact chart next to another
+          compact chart, a taller grid next to a similarly-tall table) —
+          same real content, same real height, just wider fractions here
+          since the desktop window has more room than a web viewport. Each
+          card's own internal layout (see cardStyle usage below) still
+          centers its content vertically within the row's `stretch`, so
+          any residual height difference reads as intentional, not
+          leftover space. */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 12 }}>
         <RankCard
           title={t("ProfileSearch.soloQueue")}
@@ -657,10 +646,9 @@ function RankCard({ title, entry, roleStats }: { title: string; entry: RiotLeagu
     <div style={{ ...cardStyle, borderTop: entry ? `2px solid ${lpTierColor(entry.tier)}` : cardStyle.border, height: "100%", boxSizing: "border-box", display: "flex", flexDirection: "column" }}>
       <span style={{ fontSize: 12, color: COLORS.muted }}>{title}</span>
       {/* flex:1 + centered, not just marginTop — so a row that stretches
-          this card taller than its own content (Julio, 2026-09-01: "las
-          has hecho muy grandes y tienen espacio vacío inútil") re-centers
-          the actual rank/role info in the extra height instead of leaving
-          it pinned to the top with dead space below. */}
+          this card taller than its own content re-centers the actual
+          rank/role info in the extra height instead of leaving it pinned
+          to the top with dead space below. */}
       <div style={{ flex: 1, display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16, marginTop: 8 }}>
         {entry ? (
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -773,13 +761,10 @@ function RankTrendCard({ lpHistory, matches }: { lpHistory: ProfileApiResponse["
   const gradientId = useId();
 
   // Same fallback the web's RankTrendChart uses (rank-trend-chart.tsx): a
-  // single real LP snapshot can't draw a line, and this app had no
-  // fallback at all before — it just showed "not tracked yet" even though
-  // real recent-match data was right there (Julio, 2026-08-29: "la
-  // tendencia de rango... en la web tiene datos y en la app de escritorio
-  // no"). Riot's API has no LP-history endpoint, so absent ≥2 of our own
-  // snapshots this plots a running win(+1)/loss(-1) tally from real match
-  // results instead — an honest momentum line, not fabricated LP.
+  // single real LP snapshot can't draw a line. Riot's API has no
+  // LP-history endpoint, so absent ≥2 of our own snapshots this plots a
+  // running win(+1)/loss(-1) tally from real match results instead — an
+  // honest momentum line, not fabricated LP.
   if (lpHistory.length < 2) {
     if (matches.length === 0) return null;
     return <MomentumTrendCard matches={matches} />;
@@ -807,11 +792,10 @@ function RankTrendCard({ lpHistory, matches }: { lpHistory: ProfileApiResponse["
         <span style={{ fontSize: 12, color: COLORS.muted }}>{latest.leaguePoints} LP</span>
       </div>
       {/* height:100% (not a fixed px height) — a row that stretches this
-          card taller than its own natural content (Julio, 2026-09-01:
-          oversized cards with dead space) grows the chart itself instead
-          of leaving empty space around a fixed-size one; preserveAspectRatio
-          "none" already means the viewBox freely rescales to the real
-          rendered box. */}
+          card taller than its own natural content grows the chart itself
+          instead of leaving empty space around a fixed-size one;
+          preserveAspectRatio "none" already means the viewBox freely
+          rescales to the real rendered box. */}
       <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" style={{ marginTop: 8, display: "block", flex: 1, minHeight: 80 }}>
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -890,10 +874,7 @@ function ActivityCalendarCard({ matches, puuid, platform }: { matches: RecentMat
   // null = the current month, rendered from `matches` the profile fetch
   // already brought back — free, no extra Riot call. Any other month needs
   // a real fetch (/api/v1/activity-calendar), same as the web page's own
-  // month navigation (Julio, 2026-09-01, explicit for both apps: "que
-  // tambien se puedan navegar meses anteriores" once that endpoint
-  // existed — see PROGRESS.md, previously out of scope for exactly this
-  // reason).
+  // month navigation.
   const [viewedMonth, setViewedMonth] = useState<{ year: number; monthIndex: number } | null>(null);
   const [monthState, setMonthState] = useState<
     { kind: "idle" } | { kind: "loading" } | ({ kind: "error" } & FetchProfileError) | { kind: "ok"; days: DayActivity[] }
@@ -993,10 +974,10 @@ function ActivityCalendarCard({ matches, puuid, platform }: { matches: RecentMat
       // Fluid, up to a cap (same idea as the web's ActivityCalendar,
       // mx-auto max-w-[280px]) instead of a fixed 26px cell size — the
       // card this sits in can be a lot wider than 7×26px on a real
-      // window, leaving the grid looking tiny relative to it (Julio,
-      // 2026-08-29). Cells stay square (day count fixes the grid's real
-      // height), so a taller row just centers this block vertically
-      // instead of stretching cells into rectangles.
+      // window, which would otherwise leave the grid looking tiny relative
+      // to it. Cells stay square (day count fixes the grid's real height),
+      // so a taller row just centers this block vertically instead of
+      // stretching cells into rectangles.
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", width: "100%", maxWidth: 320, margin: "10px auto 0" }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 4 }}>
           {weekdayLabels.map((label, i) => (
@@ -1141,8 +1122,7 @@ function RoadmapCard({ matches, tier }: { matches: RecentMatchSummary[]; tier: s
 // Same fillPct/track-and-fill pattern as the web's ImprovementRoadmap
 // (src/components/improvement-roadmap.tsx) — a bare number/arrow told you
 // which side of the target you were on, but not how close, which is the
-// whole point of a "roadmap" (Julio, 2026-08-29: wanted the same bars the
-// web already has).
+// whole point of a "roadmap".
 function RoadmapRow({ node }: { node: RoadmapNode }) {
   const { t } = useI18n();
   const above = node.status === "above";
@@ -1361,9 +1341,7 @@ function MatchHistoryCard({
 // same real per-participant stats already in the match payload, scored
 // with the same honest benchmark formula (see summarizeParticipant in
 // lib/profile-analysis.ts) applied to all 10 players instead of only the
-// tracked one. Brought up to the web's own level of detail 2026-08-29
-// (Julio: "en la app en partidas recientes cuando se abre el desplegable
-// no se ve como en la web... en la web hay mucho más detalle") — team
+// tracked one. Same level of detail as the web's own scoreboard — team
 // header (result/KDA/gold/objectives), column headers, and per player:
 // level badge, summoner spells, kill participation, gold, a damage bar
 // (not just the raw number), and the real 7-slot item build.

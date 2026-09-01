@@ -49,9 +49,8 @@ const MAX_COMPARE_PLAYERS = 5;
 // The 3 real sections the results screen renders once you compare
 // (head-to-head + skill overview, shared weaknesses, roadmap comparison) —
 // surfaced here as a preview so the empty-state screen pitches the tool
-// instead of a lone form on an otherwise blank page. Same pattern the web
-// app's /duo page moved to on 2026-09-01, Julio: "mejora el diseño antes
-// de elegir a los jugadores" — see RiftCompass-Web's duo/page.tsx.
+// instead of a lone form on an otherwise blank page. Same pattern as the
+// web app's /duo page — see RiftCompass-Web's duo/page.tsx.
 const COMPARE_PREVIEW_ITEMS: { key: string; Icon: LucideIcon }[] = [
   { key: "comparePreviewHeadToHead", Icon: Swords },
   { key: "comparePreviewWeaknesses", Icon: ShieldAlert },
@@ -77,14 +76,11 @@ export function ProfileCompareEntry() {
     return <ProfileCompareResult targets={targets} onReset={() => setTargets(null)} />;
   }
 
-  // No more per-slot "Buscar" confirmation step (2026-09-01, Julio: "en
-  // vez de existir un boton de buscar debe de buscarlo automaticamente al
-  // darle al boton de comparar") — every slot stays a plain text input;
-  // "Comparar" parses all of them at once (parseRiotId is local/offline,
-  // just splitting "name#tag" — the real existence check already happens
-  // in ProfileCompareResult's fetch, which already surfaces "not found"
-  // with a retry button per player, exactly what "si alguno... no se ha
-  // encontrado" asks for).
+  // No per-slot "Buscar" confirmation step — every slot stays a plain text
+  // input; "Comparar" parses all of them at once (parseRiotId is
+  // local/offline, just splitting "name#tag") since the real existence
+  // check already happens in ProfileCompareResult's fetch, which surfaces
+  // "not found" with a retry button per player.
   function handleCompare() {
     const filled = slots.filter((s) => s.riotId.trim() !== "");
     if (filled.length < 2) return;
@@ -102,11 +98,10 @@ export function ProfileCompareEntry() {
   }
 
   return (
-    // Two columns instead of one centered narrow form (2026-09-01, Julio,
-    // porting the web's /duo redesign: "la caja de compara jugadores sigue
-    // sin convencerme") — a plain-text pitch on the left doubling as a
-    // table of contents for the results screen, the form on the right
-    // split off with a border instead of its own boxed card.
+    // Two columns instead of one centered narrow form — a plain-text pitch
+    // on the left doubling as a table of contents for the results screen,
+    // the form on the right split off with a border instead of its own
+    // boxed card.
     <div style={{ display: "flex", gap: 40, alignItems: "flex-start", flexWrap: "wrap", marginTop: 24 }}>
       <div style={{ flex: "1 1 320px", display: "flex", flexDirection: "column", gap: 20 }}>
         <div>
@@ -202,10 +197,9 @@ function ComparePlatformSelect({ value, onChange }: { value: string; onChange: (
         onClick={() => setOpen((v) => !v)}
         style={{
           ...selectStyle,
-          // Fixed width used to clip longer labels ("EUNE", "SEA") against
-          // the chevron (2026-09-01, Julio flagged the region box size
-          // twice) — sized to content instead, so no label can ever crowd
-          // the icon regardless of language or which platform is picked.
+          // Sized to content instead of a fixed width, so no label ("EUNE",
+          // "SEA", ...) can ever crowd the chevron regardless of language
+          // or which platform is picked.
           width: "auto",
           minWidth: 64,
           boxSizing: "border-box",
@@ -265,11 +259,9 @@ function CompareSlot({
   const { t } = useI18n();
 
   return (
-    // No boxed card (2026-09-01, Julio, same "cajas solo donde de verdad
-    // hacen falta" rule the web redesign followed) — just the label above
-    // the row, same as every other slot in this form. Always a plain text
-    // row now, no per-slot "confirmed" state — see ProfileCompareEntry's
-    // handleCompare for why.
+    // No boxed card — just the label above the row, same as every other
+    // slot in this form. Always a plain text row, no per-slot "confirmed"
+    // state — see ProfileCompareEntry's handleCompare for why.
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
         <span style={{ fontSize: 13, color: COLORS.muted, fontWeight: 600 }}>{label}</span>
@@ -309,10 +301,8 @@ function ProfileCompareResult({ targets, onReset }: { targets: ProfileTarget[]; 
     { kind: "loading" } | ({ kind: "error" } & FetchProfileError) | { kind: "ok"; profiles: ProfileApiResponse[] }
   >({ kind: "loading" });
   // Bumped by the retry button to re-run the fetch effect below without
-  // needing a real target change (2026-09-01, Julio: "ahora mismo no hay
-  // usos de la api disponibles" while testing this screen — a rate-limit
-  // failure had no way to try again except leaving and re-entering the
-  // whole comparison).
+  // needing a real target change — without this, a rate-limit failure had
+  // no way to try again except leaving and re-entering the whole comparison.
   const [retryToken, setRetryToken] = useState(0);
 
   const targetsKey = targets.map((x) => `${x.platform}/${x.gameName}#${x.tagLine}`).join("|");
@@ -389,8 +379,7 @@ function ProfileCompareResult({ targets, onReset }: { targets: ProfileTarget[]; 
               </span>
             ))}
           </h1>
-          {/* Five players wrap as 3 + 2 (Julio, 2026-08-27) instead of the
-              auto-fit's 4 + 1. */}
+          {/* Five players wrap as 3 + 2 instead of the auto-fit's 4 + 1. */}
           <div
             style={{
               display: "grid",
@@ -573,8 +562,7 @@ function CompareRankLine({
 // same metric sitting in far-apart columns with nothing to compare it
 // against at a glance. Replaced by RoadmapComparisonCard below (one shared
 // table, a row per metric, every player's value in its own column) — same
-// pattern the web's /duo page moved to on 2026-09-01, Julio: "debido a la
-// cantidad de informacion en pantalla se ve poco claro". With two players
+// pattern as the web's /duo page. With two players
 // the big side splashes carry the art (web duo aesthetic); with 3+ each
 // column gets its own faded top-mastery splash behind it, exactly like the
 // web's multi-player columns.
@@ -773,10 +761,9 @@ function RoadmapMetricRow({
           );
         })}
       </div>
-      {/* Closed by default, same as the web's roadmap-comparison.tsx
-          (Julio, 2026-09-01: "los consejos no deben de aparecer desplegados
-          por defecto para no cargar tanto visualmente la escena") — a
-          native <details> needs no state here. */}
+      {/* Closed by default, same as the web's roadmap-comparison.tsx, so
+          the tips don't visually clutter the screen — a native <details>
+          needs no state here. */}
       <details>
         <summary style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: COLORS.muted, cursor: "pointer", listStyle: "none" }}>
           <ChevronRight size={12} />
@@ -907,12 +894,10 @@ export function CompareBlock({
   );
 }
 
-// Bigger and more generously spaced than a first pass had it (2026-09-01,
-// Julio: comparing two players, this card read as noticeably smaller/less
-// substantial than Skill Overview right next to it, even at equal grid
-// width — the difference was content density, not column size). A
-// border between rows gives each stat real vertical weight instead of
-// just a tight list of numbers.
+// Generously spaced so this card reads as substantial next to Skill
+// Overview even at equal grid width — the difference is content density,
+// not column size. A border between rows gives each stat real vertical
+// weight instead of just a tight list of numbers.
 function HeadToHeadTable({ nameA, nameB, stats }: { nameA: string; nameB: string; stats: HeadToHeadStat[] }) {
   const { t } = useI18n();
   return (

@@ -103,7 +103,7 @@ export function MetaTierList() {
         // grid's incomplete last row (3 then 2) sticks to the left because
         // grid tracks are shared across every row — flexbox wrap centers
         // each row's own items as a group, so 3-then-2 both end up
-        // centered (Julio, 2026-09-01).
+        // centered.
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 16 }}>
           {(POOL_ROLES as PersonalityRole[]).map((role) => {
             const entries = byRole[role] ?? [];

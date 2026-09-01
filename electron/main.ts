@@ -59,10 +59,8 @@ if (!gotSingleInstanceLock) {
     registerIpcHandlers();
     createMainWindow();
 
-    // Reactivated 2026-08-27 for the overlay's real-game review round
-    // (Julio testing feature-by-feature in custom games). Everything
-    // downstream (showOverlay, setOverlayInteractive) already no-ops when
-    // the window doesn't exist.
+    // Everything downstream (showOverlay, setOverlayInteractive) already
+    // no-ops when the window doesn't exist.
     const ENABLE_OVERLAY = true;
     if (ENABLE_OVERLAY) {
       createOverlayWindow();

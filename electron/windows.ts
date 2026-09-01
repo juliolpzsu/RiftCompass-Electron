@@ -29,7 +29,7 @@ const DIST_INDEX = path.join(__dirname, "..", "..", "dist", "index.html");
 const PRELOAD = path.join(__dirname, "preload.js");
 // Same icon file electron-builder.yml points at for the packaged
 // installer — set here too so the dev-run window/taskbar icon isn't
-// Electron's own default (Julio, 2026-08-31: "la app no tiene el icono").
+// Electron's own default.
 const APP_ICON = path.join(__dirname, "..", "..", "build", "icons", "icon.ico");
 
 function loadRenderer(win: BrowserWindow, query?: string): void {

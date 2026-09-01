@@ -34,8 +34,7 @@ export interface DraftSuggestion {
   // (MIN_GAMES_FOR_WINRATE in the web's champion-stats.ts). Checked live
   // against iTero's own champ-select coach: unlike its plain icon-only
   // suggestion list, this is real winrate the player can actually judge
-  // instead of trusting blind — matches Julio's ask ("recomienda campeón
-  // según qué está más fuerte").
+  // instead of trusting blind.
   winRate?: number;
   games?: number;
   // Set only for the fallback picks below — a real winrate-ranked

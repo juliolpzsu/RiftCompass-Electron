@@ -129,10 +129,10 @@ interface LiveGameData {
   allPlayers: LiveGamePlayer[];
   // gameMode distinguishes Summoner's Rift ("CLASSIC") from ARAM/URF/etc —
   // a custom game on Summoner's Rift still reports "CLASSIC", so objective
-  // timers work the same in Julio's custom-game test runs as in a real
-  // queued match; other modes don't have dragon/herald/baron at all, so
-  // features tied to that objective must check this instead of assuming
-  // every live game is on Summoner's Rift.
+  // timers work the same in a custom game as in a real queued match; other
+  // modes don't have dragon/herald/baron at all, so features tied to that
+  // objective must check this instead of assuming every live game is on
+  // Summoner's Rift.
   gameData: { gameTime: number; gameMode: string };
   // The full official event feed (GameStart, ChampionKill, DragonKill,
   // etc. — see docs/overlay-research.md) — liveclient.rs already forwards
@@ -198,9 +198,8 @@ interface ObjectiveTimer {
 }
 
 // Void Grubs, Herald and Baron all live in the same jungle pit, one after
-// another (Julio, 2026-08-30: "ya que las larvas el barón y el heraldo
-// salen en el mismo sitio solo habrá un contador") — so instead of three
-// parallel entries, the pit is a single timer that shows whichever of the
+// another — so instead of three parallel entries, the pit is a single
+// timer that shows whichever of the
 // three is actually relevant right now: Grubs until their despawn time,
 // then Herald until it's taken (or Baron's first spawn pushes it out
 // either way), then Baron for the rest of the game on its own respawn
@@ -283,8 +282,8 @@ const SUMMONER_SPELL_INFO: Record<string, { ddragonKey: string; cooldownSeconds:
 // everyone else's real current gold isn't exposed by the API at all — this
 // sums the real per-item cost of what's visibly built instead, which is
 // necessarily an underestimate (doesn't account for gold already spent on
-// wards/potions/sold items). Julio, 2026-08-30: no "~" marker in the UI for
-// this, it's an understood approximation.
+// wards/potions/sold items) — shown without a "~" marker in the UI, as an
+// understood approximation.
 function goldForPlayer(p: LiveGamePlayer, isLocal: boolean, activeGold: number | undefined): { amount: number } | null {
   if (isLocal && activeGold !== undefined) return { amount: Math.round(activeGold) };
   const items = p.items ?? [];
@@ -293,7 +292,7 @@ function goldForPlayer(p: LiveGamePlayer, isLocal: boolean, activeGold: number |
   return { amount };
 }
 
-// Lane gold table (Julio, 2026-08-28): one row per lane — your laner, the
+// Lane gold table: one row per lane — your laner, the
 // gold diff, their laner — your side always on the left regardless of
 // which in-game team (ORDER/CHAOS) you're actually on. Matched via champ
 // select's assignedPosition (already known per cellId, both teams) +
@@ -454,9 +453,9 @@ export function OverlayView() {
   const [championWinrates, setChampionWinrates] = useState<ChampionWinrateEntry[]>([]);
   const [applyBuildState, setApplyBuildState] = useState<"idle" | "working" | "done" | "error">("idle");
   const requestedPuuids = useRef(new Set<string>());
-  // The local player's real solo-queue tier, for the CS/min-vs-elo target
-  // (Julio, 2026-08-28: "CS/min según tu elo") — fetched once via the LCU,
-  // not carried by Live Client Data or the champ-select session.
+  // The local player's real solo-queue tier, for the CS/min-vs-elo target —
+  // fetched once via the LCU, not carried by Live Client Data or the
+  // champ-select session.
   const [localRankTier, setLocalRankTier] = useState<string | null>(null);
   const [abilityCalibration, setAbilityCalibration] = useState<AbilityBarCalibration | null>(null);
   // Which ability the calibration flow is waiting for a click on next —
@@ -467,8 +466,8 @@ export function OverlayView() {
   // stays valid across resolutions — null until the player drags it once,
   // meaning "use the default corner".
   const [panelPositions, setPanelPositions] = useState<OverlayPanelPositions>({ gold: null, objectives: null, csPerMin: null, enemySpells: null });
-  // Manual enemy summoner-spell cooldowns (Julio, 2026-08-30): the player
-  // clicks a spell the moment they see the enemy use it, starting a
+  // Manual enemy summoner-spell cooldowns: the player clicks a spell the
+  // moment they see the enemy use it, starting a
   // countdown from its base cooldown — see SUMMONER_SPELL_INFO above for
   // why this can't be detected automatically. Keyed by "team-championName"
   // (unique per game outside blind pick / bot lobbies, the only modes
@@ -718,9 +717,9 @@ export function OverlayView() {
     }
   }
 
-  // Local player's CS/min against the real target for their own rank band
-  // (Julio, 2026-08-28: "CS/min según tu elo") — same benchmark table the
-  // web profile's roadmap uses (lib/profile-analysis.ts), not a new number.
+  // Local player's CS/min against the real target for their own rank
+  // band — same benchmark table the web profile's roadmap uses
+  // (lib/profile-analysis.ts), not a new number.
   const localLiveGamePlayer = liveGame?.allPlayers.find((p) => isLocalPlayer(p, liveGame.activePlayerName));
   const localCsPerMin = localLiveGamePlayer ? csPerMinute(localLiveGamePlayer, liveGame?.gameData?.gameTime ?? 0) : null;
   const localCsTarget = CS_PER_MIN_TARGETS[tierToBand(localRankTier)];
@@ -954,14 +953,11 @@ export function OverlayView() {
         </div>
       ) : null}
 
-      {/* Objectives: just the icons + remaining time, no card behind them
-          (Julio, 2026-08-30: "los objetivos parecerán únicamente en forma
-          del emoticono con el tiempo restante debajo" / "no es necesario
-          el panel del fondo, pueden estar los iconos directamente") — a
-          drop-shadow keeps them legible over whatever's on screen instead
-          of a background box. Top-right by default, only while Tab is
-          held, draggable to wherever the player wants while visible.
-          Dragon and the shared void grubs/herald/baron pit (see
+      {/* Objectives: just the icons + remaining time, no card behind them —
+          a drop-shadow keeps them legible over whatever's on screen
+          instead of a background box. Top-right by default, only while
+          Tab is held, draggable to wherever the player wants while
+          visible. Dragon and the shared void grubs/herald/baron pit (see
           computePitTimer) are the only two entries. */}
       {phase === "InProgress" && liveGame && tabHeld && liveGame.gameData?.gameMode === CLASSIC_GAME_MODE && liveGame.events?.Events ? (
         <div
@@ -994,8 +990,7 @@ export function OverlayView() {
       ) : null}
 
       {/* Own CS/min vs elo target: its own draggable panel, default just
-          below the objectives panel (Julio, 2026-08-30: "en otro overlay
-          separado debajo el cs por minuto"). */}
+          below the objectives panel. */}
       {phase === "InProgress" && liveGame && tabHeld && overlayModules.csPerMinute && localCsPerMin !== null ? (
         <div
           onMouseEnter={csPerMinDrag.onMouseEnter}

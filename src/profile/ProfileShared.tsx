@@ -101,21 +101,18 @@ export function useSavedProfiles(): SavedProfileWithRank[] {
 }
 
 // Portal-based dropdown panel, shared by ComparePlatformSelect and
-// CompareSavedProfilePicker below so both look and behave identically
-// (2026-09-01, Julio: "el desplegable de la región no tiene la estética
-// del otro"). Rendered into document.body instead of as a normal
-// descendant of its trigger — MainView.tsx's <main> wraps every screen's
-// content in a `.rc-view-enter` div that plays a mount animation
-// (opacity+transform); per spec, an element with a non-"none" animation
-// touching those properties creates its own stacking context for as long
-// as the animation is attached, which silently caps any z-index painted
-// inside it below content elsewhere in the tree — confirmed live
-// 2026-09-01, Julio: "el otro no se muestra por encima del resto de cosas
-// por lo que no se ve bien". A portal escapes that trap entirely instead
-// of chasing ever-higher z-index values against it. Position is computed
-// from the trigger's real screen rect (recalculated on every open) since
-// portaled content can no longer rely on `position:absolute` against an
-// ancestor it's no longer inside.
+// CompareSavedProfilePicker below so both look and behave identically.
+// Rendered into document.body instead of as a normal descendant of its
+// trigger — MainView.tsx's <main> wraps every screen's content in a
+// `.rc-view-enter` div that plays a mount animation (opacity+transform);
+// per spec, an element with a non-"none" animation touching those
+// properties creates its own stacking context for as long as the
+// animation is attached, which silently caps any z-index painted inside
+// it below content elsewhere in the tree. A portal escapes that trap
+// entirely instead of chasing ever-higher z-index values against it.
+// Position is computed from the trigger's real screen rect (recalculated
+// on every open) since portaled content can no longer rely on
+// `position:absolute` against an ancestor it's no longer inside.
 export function DropdownMenu({
   triggerRef,
   open,
@@ -165,10 +162,9 @@ export function DropdownMenu({
       // of this panel's own subtree, even though it's nested in the React
       // tree. Without this check, picking an option in that inner dropdown
       // read as a click "outside" this outer one and closed it before its
-      // own onClick ever ran (Julio, 2026-09-01: "se cierra el desplegable
-      // en vez de comparar con ese perfil") — every DropdownMenu panel
-      // carries the same marker, so a click anywhere inside any of them
-      // never counts as outside any of them.
+      // own onClick ever ran — every DropdownMenu panel carries the same
+      // marker, so a click anywhere inside any of them never counts as
+      // outside any of them.
       if (target instanceof Element && target.closest("[data-rc-dropdown]")) return;
       onClose();
     }
@@ -234,8 +230,7 @@ export const dropdownOptionStyle: React.CSSProperties = {
 };
 
 // Same "just a chevron inside the Riot ID box" trigger as the web app's
-// SavedProfilePicker (2026-09-01, Julio: "quiero que este en donde se
-// escribe el nombre a mano... con una simple flecha").
+// SavedProfilePicker.
 export function CompareSavedProfilePicker({
   profiles,
   onPick,
@@ -289,23 +284,10 @@ export function CompareSavedProfilePicker({
   );
 }
 
-// Web's "Glass & Depth" Card (src/components/ui/card.tsx): rounded-xl
-// (14px), bg-card/70 (COLORS.card at 70% = rgba(23,18,26,0.7) — same hex
-// COLORS.card already mirrors), backdrop-blur-xl (24px), ring-1
-// ring-foreground/10 (COLORS.text at 10%), shadow-lg shadow-black/20.
-// 2026-08-28, Julio: "quiero que... muestre los datos tal y como se ven
-// en la web, no hay necesidad de ese otro estilo diferente" — this
-// profile screen used to deliberately diverge from the web's look; it no
-// longer does.
-// Flat card, no blur/glass — Julio, 2026-08-29: the glass-card look this
-// commit's own history briefly introduced (matching riftcompass.com's own
-// styling) was a misread of "muestre los datos tal y como se ven en la
-// web" as "look like the website" when he meant "look like this app's own
-// profile search" — which, being the same shared component, already had
-// this flat style before that change. Reverted the shared visual language
-// only; the content sections that commit added (rank trend, activity
-// calendar, champion pool, SVG radar) stay, since those were never the
-// complaint.
+// Same color tokens as the web's "Glass & Depth" Card (src/components/ui/
+// card.tsx: rounded-xl, bg-card/70, ring-foreground/10, shadow-lg
+// shadow-black/20) but flat — no backdrop blur — matching this app's own
+// established profile-search style rather than the web's glass look.
 export const cardStyle = makeCardStyle();
 
 export const selectStyle: React.CSSProperties = {

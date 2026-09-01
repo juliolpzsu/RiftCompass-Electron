@@ -153,15 +153,15 @@ export function MainView() {
     });
   }, []);
 
-  // Post-game summary — Julio, 2026-08-29: "al acabar una partida pondrá
-  // el resumen de esta hasta que empiece la siguiente o se cambie de
-  // ventana". Reuses the exact same auto-navigate-to-own-profile call the
-  // connect-time auto-center above uses, rather than a separate summary
-  // screen: it already renders identically to a searched profile (same
-  // component, same target shape) and its freshly-refetched match history
-  // naturally puts the just-finished game at the top — no new backend
-  // endpoint or data shape to trust. Edge-triggered on leaving
-  // "InProgress" (not a ref/flag to reset), so it only fires once per
+  // Post-game summary: shows on the profile screen from the end of a
+  // match until the next one starts or the window changes. Reuses the
+  // exact same auto-navigate-to-own-profile call the connect-time
+  // auto-center above uses, rather than a separate summary screen: it
+  // already renders identically to a searched profile (same component,
+  // same target shape) and its freshly-refetched match history naturally
+  // puts the just-finished game at the top — no new backend endpoint or
+  // data shape to trust. Edge-triggered on leaving "InProgress" (not a
+  // ref/flag to reset), so it only fires once per
   // match end and re-arms itself for the next one automatically. Only
   // auto-navigates while idle at the tools home, same as the connect-time
   // guard — never yanks the user out of a tool/settings they're using.
@@ -293,9 +293,7 @@ export function MainView() {
           ) : panel === "compare" ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {/* Same back-to-menu control every other screen has (profile,
-                  every tool) — missing here entirely before this fix
-                  (Julio, 2026-09-01: "en el comparador de perfiles no esta
-                  el boton de volver atras como en el resto"). */}
+                  every tool). */}
               <button
                 onClick={goHome}
                 style={{
@@ -316,12 +314,10 @@ export function MainView() {
               <ProfileCompareEntry />
             </div>
           ) : openTool ? (
-            // No outer cap: a fixed maxWidth here just left dead margins on
-            // a wide window without actually rearranging anything inside
-            // (Julio, 2026-09-01, after seeing 960 and then a 1360 cap both
-            // do this: "sigue habiendo mucho espacio a los lados, te
-            // empeñas en usar solo una especie de columna en el centro").
-            // Each tool's own layout (Gold Calculator's 3-col grid, Draft
+            // No outer cap: a fixed maxWidth here just leaves dead margins
+            // on a wide window without actually rearranging anything
+            // inside it. Each tool's own layout (Gold Calculator's 3-col
+            // grid, Draft
             // Simulator's two team boards, Tier List's chip rows, Meta Tier
             // List's role cards...) now decides how it fills the real
             // width; a tool that genuinely wants to stay narrow (the
@@ -1430,13 +1426,10 @@ function headerSearchFieldStyle(error: boolean): React.CSSProperties {
   };
 }
 
-// The detected local player, next to the "Herramientas" title — Julio,
-// 2026-08-28: "quiero que a la derecha de donde pone herramientas
-// aparezca el perfil del jugador que tiene el juego abierto... con el
-// que se podrá interactuar para volver a la pestaña que se abre cuando la
-// app detecta el juego". Clicking it re-opens that same auto-detected
-// profile (openProfile in MainView), so navigating away from it (e.g. to
-// browse a tool) doesn't lose the way back.
+// The detected local player, next to the "Herramientas" title. Clicking it
+// re-opens that same auto-detected profile (openProfile in MainView), so
+// navigating away from it (e.g. to browse a tool) doesn't lose the way
+// back.
 function DetectedPlayerChip({ identity, onClick }: { identity: LcuIdentity; onClick: () => void }) {
   const [ddragonVersion, setDdragonVersion] = useState<string | null>(null);
 
