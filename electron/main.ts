@@ -20,11 +20,20 @@ import { createMainWindow, createOverlayWindow, getOverlayWindow, showMainWindow
 // both modes — that one's for real inline style={{}} props this app
 // renders throughout, not just Vite's dev-mode <style> injection, so it's
 // not a dev-only concern the way script-src's eval requirement is.
+//
+// script-src's 'unsafe-inline' in dev is likewise a floor, not a ceiling:
+// @vitejs/plugin-react injects an inline <script type="module"> preamble
+// into the dev HTML to wire up Fast Refresh, and without it the renderer
+// throws "can't detect preamble" and never mounts — a real regression hit
+// the same day this CSP was added (blank white window, both for Julio and
+// in an agent's own launch attempts). The production build never injects
+// that preamble (everything's bundled into external files), so this stays
+// dev-only exactly like 'unsafe-eval' above.
 function applyContentSecurityPolicy(): void {
   const isDev = !app.isPackaged;
   const csp = [
     "default-src 'self'",
-    `script-src 'self'${isDev ? " 'unsafe-eval'" : ""}`,
+    `script-src 'self'${isDev ? " 'unsafe-eval' 'unsafe-inline'" : ""}`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src https://fonts.gstatic.com",
     "img-src 'self' data: https://ddragon.leagueoflegends.com https://raw.communitydragon.org https://cdn.communitydragon.org https://*.public.blob.vercel-storage.com",
