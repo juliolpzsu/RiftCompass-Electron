@@ -10,7 +10,7 @@ import {
   type PersonalityRole,
 } from "../lib/personality-test";
 import { useI18n } from "../i18n";
-import { COLORS, FONT_HEADING } from "../theme";
+import { COLORS, FONT_HEADING, cardStyle as makeCardStyle } from "../theme";
 import { API_BASE_URL } from "../shared/api";
 
 // Real winrate from RiftCompass's own crawler, same public endpoint
@@ -236,12 +236,7 @@ function RealWinrateBadge({
   );
 }
 
-const cardStyle: React.CSSProperties = {
-  borderRadius: 10,
-  border: `1px solid ${COLORS.cardBorder}`,
-  background: `${COLORS.card}99`,
-  padding: 18,
-};
+const cardStyle = makeCardStyle({ borderRadius: 10, padding: 18 });
 
 const cardTitleStyle: React.CSSProperties = {
   fontFamily: FONT_HEADING,

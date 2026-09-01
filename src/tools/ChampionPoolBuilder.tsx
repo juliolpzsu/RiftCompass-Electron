@@ -13,7 +13,7 @@ import {
 } from "../lib/champion-pool-builder";
 import { type PersonalityRole } from "../lib/personality-test";
 import { useI18n } from "../i18n";
-import { COLORS, FONT_HEADING } from "../theme";
+import { COLORS, FONT_HEADING, cardStyle as makeCardStyle } from "../theme";
 
 // Ported from the web app's src/components/tools/champion-pool-builder.tsx.
 // The web version also shows real winrate badges from riftcompass.com's own
@@ -319,12 +319,7 @@ function smallButtonStyle(disabled: boolean): React.CSSProperties {
   };
 }
 
-const cardStyle: React.CSSProperties = {
-  borderRadius: 10,
-  border: `1px solid ${COLORS.cardBorder}`,
-  background: `${COLORS.card}99`,
-  padding: 18,
-};
+const cardStyle = makeCardStyle({ borderRadius: 10, padding: 18 });
 
 const cardTitleStyle: React.CSSProperties = {
   fontFamily: FONT_HEADING,

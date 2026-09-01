@@ -18,7 +18,9 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { API_BASE_URL } from "./shared/api";
-import { ProfileScreen, ProfileCompareEntry, parseRiotId, type ProfileTarget } from "./ProfileScreen";
+import { ProfileScreen } from "./profile/ProfileDetail";
+import { ProfileCompareEntry } from "./profile/ProfileCompare";
+import { parseRiotId, type ProfileTarget } from "./profile/ProfileShared";
 import { TOOLS, type ToolId, type ToolMeta } from "./tool-meta";
 import { GoldCalculator } from "./tools/GoldCalculator";
 import { WaveTimer } from "./tools/WaveTimer";
@@ -30,7 +32,7 @@ import { ChampionPoolBuilder } from "./tools/ChampionPoolBuilder";
 import { TierListBuilder } from "./tools/TierListBuilder";
 import { MapEditor } from "./tools/MapEditor";
 import { MetaTierList } from "./tools/MetaTierList";
-import { COLORS, FONT_HEADING } from "./theme";
+import { COLORS, FONT_HEADING, inputStyle, pillStyle } from "./theme";
 import { WindowControls } from "./WindowControls";
 import { useI18n, SUPPORTED_LOCALES, LOCALE_LABEL, type Locale } from "./i18n";
 import { ChampionSplashAccent } from "./ChampionSplashAccent";
@@ -1885,23 +1887,3 @@ const smallButtonStyle: React.CSSProperties = {
   cursor: "pointer",
 };
 
-const inputStyle: React.CSSProperties = {
-  background: COLORS.background,
-  color: COLORS.text,
-  border: `1px solid ${COLORS.cardBorder}`,
-  borderRadius: 8,
-  padding: "8px 12px",
-  fontSize: 13,
-};
-
-function pillStyle(active: boolean): React.CSSProperties {
-  return {
-    padding: "6px 14px",
-    borderRadius: 999,
-    border: `1px solid ${active ? COLORS.rose : COLORS.cardBorder}`,
-    background: active ? `${COLORS.rose}26` : "none",
-    color: active ? COLORS.rose : COLORS.text,
-    fontSize: 13,
-    cursor: "pointer",
-  };
-}

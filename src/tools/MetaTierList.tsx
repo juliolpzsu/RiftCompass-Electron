@@ -6,7 +6,7 @@ import { positionIconUrl } from "../lib/profile-analysis";
 import { TIERS, TIER_COLORS, type Tier } from "../lib/tier-colors";
 import { API_BASE_URL } from "../shared/api";
 import { useI18n } from "../i18n";
-import { COLORS, FONT_HEADING } from "../theme";
+import { COLORS, FONT_HEADING, cardStyle as makeCardStyle, pillStyle } from "../theme";
 
 // Ported from the web app's /tools/meta-tier-list page and
 // src/lib/crawler/meta-tier-list.ts's tierChampionsByWinrate — same
@@ -84,7 +84,7 @@ export function MetaTierList() {
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
         {RANK_TIERS.map((r) => (
-          <button key={r} onClick={() => setRank(r)} style={pillStyle(rank === r)}>
+          <button key={r} onClick={() => setRank(r)} style={pillStyle(rank === r, "compact")}>
             {t(`MetaTierList.rankTiers.${r}`)}
           </button>
         ))}
@@ -195,21 +195,4 @@ export function MetaTierList() {
   );
 }
 
-const cardStyle: React.CSSProperties = {
-  borderRadius: 12,
-  border: `1px solid ${COLORS.cardBorder}`,
-  background: `${COLORS.card}99`,
-  padding: 20,
-};
-
-function pillStyle(active: boolean): React.CSSProperties {
-  return {
-    padding: "6px 12px",
-    borderRadius: 999,
-    border: `1px solid ${active ? COLORS.rose : COLORS.cardBorder}`,
-    background: active ? `${COLORS.rose}26` : "none",
-    color: active ? COLORS.rose : COLORS.text,
-    fontSize: 12,
-    cursor: "pointer",
-  };
-}
+const cardStyle = makeCardStyle({ padding: 20 });
