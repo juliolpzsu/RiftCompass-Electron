@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ChevronDown } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { API_BASE_URL } from "../shared/api";
 import { COLORS, TYPE, cardStyle as makeCardStyle, inputStyle } from "../theme";
 import { useI18n } from "../i18n";
@@ -177,6 +177,7 @@ export function DropdownMenu({
     <div
       ref={panelRef}
       data-rc-dropdown
+      className="rc-dropdown-panel"
       style={{
         position: "fixed",
         top: rect.top + 4,
@@ -185,12 +186,8 @@ export function DropdownMenu({
         maxWidth,
         maxHeight,
         overflowY: "auto",
-        background: COLORS.card,
-        border: `1px solid ${COLORS.cardBorder}`,
-        borderRadius: 8,
         padding,
         zIndex: 1000,
-        boxShadow: "0 12px 24px -8px rgba(0,0,0,0.6)",
         display: "flex",
         flexDirection: "column",
         gap: 2,
@@ -322,42 +319,73 @@ export function PlatformSelect({ value, onChange }: { value: string; onChange: (
           ...selectStyle,
           // Sized to content instead of a fixed width, so no label ("EUNE",
           // "SEA", ...) can ever crowd the chevron regardless of language
-          // or which platform is picked. Extra right padding specifically
-          // for the chevron (selectStyle's own 12px reads as cramped once
-          // an icon, not just text, sits against that edge — Julio,
-          // 2026-09-01).
+          // or which platform is picked. Explicit left/right margins on
+          // the chevron itself (not `gap` + marginLeft:auto) — with a
+          // content-sized box there's no leftover flex space for an auto
+          // margin to redistribute, so `gap` alone was the only thing
+          // separating text and icon and read as tight on both sides
+          // (Julio, 2026-09-01, two rounds of feedback on this control).
+          // A rose halo while open echoes the same control's own
+          // :focus-visible ring so "this is what opened that menu" is
+          // never ambiguous.
           width: "auto",
           minWidth: 64,
           boxSizing: "border-box",
           display: "flex",
           alignItems: "center",
-          gap: 8,
-          paddingRight: 16,
+          paddingRight: 30,
           cursor: "pointer",
+          position: "relative",
+          transition: "border-color 120ms ease, box-shadow 120ms ease",
+          ...(open
+            ? {
+                borderColor: `${COLORS.rose}59`,
+                boxShadow: `0 0 0 3px ${COLORS.rose}1a`,
+              }
+            : null),
         }}
       >
         {PLATFORM_LABELS[value] ?? value}
-        <ChevronDown size={13} color={COLORS.muted} style={{ marginLeft: "auto", flexShrink: 0 }} />
+        <ChevronDown
+          size={13}
+          color={open ? COLORS.rose : COLORS.muted}
+          style={{
+            position: "absolute",
+            right: 12,
+            top: "50%",
+            transform: `translateY(-50%) rotate(${open ? 180 : 0}deg)`,
+            transition: "transform 150ms ease, color 120ms ease",
+          }}
+        />
       </button>
       <DropdownMenu triggerRef={triggerRef} open={open} onClose={() => setOpen(false)} align="left" minWidth={90}>
-        {PLATFORMS.map((p) => (
-          <button
-            key={p}
-            type="button"
-            onClick={() => {
-              onChange(p);
-              setOpen(false);
-            }}
-            className="rc-dropdown-option"
-            style={{
-              ...dropdownOptionStyle,
-              color: p === value ? COLORS.rose : COLORS.text,
-              background: p === value ? `${COLORS.rose}1f` : "none",
-            }}
-          >
-            {PLATFORM_LABELS[p]}
-          </button>
-        ))}
+        {PLATFORMS.map((p) => {
+          const selected = p === value;
+          return (
+            <button
+              key={p}
+              type="button"
+              onClick={() => {
+                onChange(p);
+                setOpen(false);
+              }}
+              className="rc-dropdown-option"
+              style={{
+                ...dropdownOptionStyle,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 10,
+                color: selected ? COLORS.rose : COLORS.text,
+                background: selected ? `linear-gradient(90deg, ${COLORS.rose}29, ${COLORS.rose}0a)` : "none",
+                fontWeight: selected ? 700 : dropdownOptionStyle.fontWeight,
+              }}
+            >
+              {PLATFORM_LABELS[p]}
+              {selected ? <Check size={14} color={COLORS.rose} style={{ flexShrink: 0 }} /> : null}
+            </button>
+          );
+        })}
       </DropdownMenu>
     </div>
   );
