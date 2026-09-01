@@ -210,6 +210,27 @@ button.rc-tool-card:not(:disabled):active {
   transform: translateY(-3px) scale(0.97);
 }
 
+/* Roadmap "Personal tips" disclosure (ProfileCompare.tsx) — a native
+   <details>/<summary> isn't a <button>, so it doesn't inherit the generic
+   button:hover rule above and was the one clickable control in the app
+   with zero cursor feedback. Matches riftcompass.com's own roadmap
+   disclosure: text lightens on hover, chevron rotates open. */
+summary {
+  list-style: none;
+}
+summary::-webkit-details-marker {
+  display: none;
+}
+summary:hover {
+  color: #f7f3f5;
+}
+summary svg {
+  transition: transform 150ms ease;
+}
+details[open] > summary svg {
+  transform: rotate(90deg);
+}
+
 /* Main content area's view switch (Herramientas grid <-> a tool <->
    perfil <-> comparar <-> ajustes): previously an instant hard swap with
    zero transition, the most-repeated navigation in the app and the main
