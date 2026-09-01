@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "apple-design": {
+      "source": "dickwu/apple-design-skill",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "a65fb1a31a53db34492243b5d93b6c7a7d1b2d27626a5c740ea30476b7f7e55c"
+    }
+  }
+}
