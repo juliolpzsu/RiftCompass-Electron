@@ -980,7 +980,7 @@ export function OverlayView() {
                 title={t(`Overlay.${obj.key}Timer`)}
               >
                 <img src={OBJECTIVE_ICON[obj.key]} alt="" style={{ width: 26, height: 26, opacity: up ? 1 : 0.55 }} />
-                <span style={{ fontSize: 11, fontWeight: 600, color: up ? "#7edc96" : "#fff" }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: up ? "#7edc96" : "#fff" }}>
                   {up ? t("Overlay.objectiveUp") : formatCountdown(obj.remainingSeconds)}
                 </span>
               </div>
@@ -1010,6 +1010,7 @@ export function OverlayView() {
               <span />
             )}
             <span style={{ fontSize: 12, fontWeight: 600, color: localCsPerMin >= localCsTarget ? "#7edc96" : ROSE }}>
+              <span style={{ fontWeight: 700, marginRight: 3 }}>{localCsPerMin >= localCsTarget ? "▲" : "▼"}</span>
               {localCsPerMin} <span style={{ color: MUTED, fontWeight: 400 }}>/ {localCsTarget}</span>
             </span>
           </div>
