@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 import { API_BASE_URL } from "../shared/api";
-import { COLORS, cardStyle as makeCardStyle, inputStyle } from "../theme";
+import { COLORS, TYPE, cardStyle as makeCardStyle, inputStyle } from "../theme";
 import { useI18n } from "../i18n";
 import { PLATFORM_LABELS } from "../lib/rank-lp";
 import type { ProfileApiResponse } from "../lib/profile-types";
@@ -212,6 +212,12 @@ export const AXIS_LABEL_KEY: Record<string, string> = {
   damage: "damage",
 };
 
+// fontWeight 500 (not the body default 400) and TYPE.body's 13px, not a
+// smaller one-off: light-weight small text in near-white on this app's
+// near-black card background reads as noticeably weaker/thinner than the
+// same color/weight combination would on a light background (the eye's
+// halation response to bright-on-dark text), so an unselected dropdown
+// option looked washed out next to the bold, colored selected one.
 export const dropdownOptionStyle: React.CSSProperties = {
   display: "block",
   width: "100%",
@@ -221,7 +227,8 @@ export const dropdownOptionStyle: React.CSSProperties = {
   border: "none",
   background: "none",
   color: COLORS.text,
-  fontSize: 12,
+  fontSize: TYPE.body,
+  fontWeight: 500,
   cursor: "pointer",
   fontFamily: "inherit",
   overflow: "hidden",
