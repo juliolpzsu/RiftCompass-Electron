@@ -185,6 +185,17 @@ textarea:focus-visible {
   box-shadow: 0 0 0 2px #0c0a0d, 0 0 0 4px #e63977;
 }
 
+/* Dropdown menu options (DropdownMenu/dropdownOptionStyle, ProfileShared.tsx):
+   background: "none" at rest means the generic button:hover brightness
+   filter above has nothing to brighten — text-only anti-aliasing barely
+   moves, so picking a different option felt dead compared to a native
+   <select>'s own hover highlight (Julio, 2026-09-01, after the platform
+   picker's native <select>s were replaced with this custom dropdown). A
+   real background on hover, not just a filter. */
+.rc-dropdown-option:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
 /* Tools-index cards specifically: this one already declared a
    border-color/transform transition (see MainView.tsx) that nothing ever
    triggered — no :hover rule existed anywhere to change either property.

@@ -281,6 +281,7 @@ export function CompareSavedProfilePicker({
               onPick({ platform: p.platform, gameName: p.gameName, tagLine: p.tagLine });
               setOpen(false);
             }}
+            className="rc-dropdown-option"
             style={dropdownOptionStyle}
           >
             {p.gameName}#{p.tagLine} <span style={{ color: COLORS.muted }}>· {PLATFORM_LABELS[p.platform] ?? p.platform}</span>
@@ -321,18 +322,22 @@ export function PlatformSelect({ value, onChange }: { value: string; onChange: (
           ...selectStyle,
           // Sized to content instead of a fixed width, so no label ("EUNE",
           // "SEA", ...) can ever crowd the chevron regardless of language
-          // or which platform is picked.
+          // or which platform is picked. Extra right padding specifically
+          // for the chevron (selectStyle's own 12px reads as cramped once
+          // an icon, not just text, sits against that edge — Julio,
+          // 2026-09-01).
           width: "auto",
           minWidth: 64,
           boxSizing: "border-box",
           display: "flex",
           alignItems: "center",
           gap: 8,
+          paddingRight: 16,
           cursor: "pointer",
         }}
       >
         {PLATFORM_LABELS[value] ?? value}
-        <ChevronDown size={14} color={COLORS.muted} style={{ marginLeft: "auto" }} />
+        <ChevronDown size={13} color={COLORS.muted} style={{ marginLeft: "auto", flexShrink: 0 }} />
       </button>
       <DropdownMenu triggerRef={triggerRef} open={open} onClose={() => setOpen(false)} align="left" minWidth={90}>
         {PLATFORMS.map((p) => (
@@ -343,6 +348,7 @@ export function PlatformSelect({ value, onChange }: { value: string; onChange: (
               onChange(p);
               setOpen(false);
             }}
+            className="rc-dropdown-option"
             style={{
               ...dropdownOptionStyle,
               color: p === value ? COLORS.rose : COLORS.text,
