@@ -72,6 +72,7 @@ export const es: Messages = {
     refreshCooldown: "Disponible en {time}",
     lastUpdatedNow: "Actualizado justo ahora",
     lastUpdatedMinutes: "Actualizado hace {minutes} min",
+    errorTitle: "No se pudo cargar el perfil",
     errors: {
       notFound: "No se ha encontrado ese Riot ID. Comprueba el nombre y la región.",
       rateLimited: "RiftCompass ha llegado al límite de peticiones de Riot. Espera un momento e inténtalo de nuevo.",

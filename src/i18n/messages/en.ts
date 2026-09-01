@@ -84,6 +84,7 @@ export const en = {
     refreshCooldown: "Available in {time}",
     lastUpdatedNow: "Updated just now",
     lastUpdatedMinutes: "Updated {minutes} min ago",
+    errorTitle: "Couldn't load profile",
     errors: {
       notFound: "Riot ID not found. Check the spelling and region.",
       rateLimited: "RiftCompass hit Riot's API rate limit. Wait a moment and try again.",

@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
+  CircleAlert,
   Crosshair,
   Eye,
   Flame,
@@ -18,7 +19,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { API_BASE_URL } from "../shared/api";
-import { COLORS, FONT_HEADING, inputStyle } from "../theme";
+import { COLORS, FONT_HEADING, TYPE, inputStyle } from "../theme";
 import { useI18n } from "../i18n";
 import { championSquareUrl, profileIconUrl, itemIconUrl, fetchSummonerSpellIconsById } from "../ddragon";
 import { ChampionSplashAccent } from "../ChampionSplashAccent";
@@ -358,7 +359,15 @@ function ProfileDetail({
     const key = errorMessageKey(state.error, state.status);
     return (
       <div style={{ maxWidth: 480, margin: "40px auto 0", display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-start" }}>
-        <p style={{ fontSize: 13, color: COLORS.rose }}>{t(`ProfileSearch.errors.${key}`)}</p>
+        <div style={{ ...cardStyle, display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-start", width: "100%" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <CircleAlert size={18} color={COLORS.rose} />
+            <p style={{ fontFamily: FONT_HEADING, fontSize: TYPE.subheading, fontWeight: 400, margin: 0, color: COLORS.text }}>
+              {t("ProfileSearch.errorTitle")}
+            </p>
+          </div>
+          <p style={{ fontSize: TYPE.body, color: COLORS.muted, margin: 0, lineHeight: 1.5 }}>{t(`ProfileSearch.errors.${key}`)}</p>
+        </div>
         <button onClick={onSearchAgain} style={secondaryButtonStyle}>
           {t("ProfileSearch.searchAgain")}
         </button>
