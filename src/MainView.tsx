@@ -32,7 +32,7 @@ import { ChampionPoolBuilder } from "./tools/ChampionPoolBuilder";
 import { TierListBuilder } from "./tools/TierListBuilder";
 import { MapEditor } from "./tools/MapEditor";
 import { MetaTierList } from "./tools/MetaTierList";
-import { COLORS, FONT_HEADING, inputStyle, pillStyle } from "./theme";
+import { COLORS, FONT_HEADING, TYPE, inputStyle, pillStyle } from "./theme";
 import { WindowControls } from "./WindowControls";
 import { useI18n, SUPPORTED_LOCALES, LOCALE_LABEL, type Locale } from "./i18n";
 import { ChampionSplashAccent } from "./ChampionSplashAccent";
@@ -348,7 +348,7 @@ export function MainView() {
               </button>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <openTool.icon size={22} color={openTool.accent} />
-                <h1 style={{ fontFamily: FONT_HEADING, fontSize: 22, fontWeight: 400, margin: 0 }}>
+                <h1 style={{ fontFamily: FONT_HEADING, fontSize: TYPE.heading, fontWeight: 400, margin: 0 }}>
                   {t(`ToolsIndex.${openTool.id}.title`)}
                 </h1>
               </div>
@@ -1312,7 +1312,7 @@ function ToolsIndex({
       >
         <ChampionSplashAccent championId="Ahri" style={{ top: -40, right: -20, width: 480, height: 320 }} />
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <h1 style={{ fontFamily: FONT_HEADING, fontSize: 24, fontWeight: 400, margin: 0 }}>{t("ToolsIndex.title")}</h1>
+          <h1 style={{ fontFamily: FONT_HEADING, fontSize: TYPE.heading, fontWeight: 400, margin: 0 }}>{t("ToolsIndex.title")}</h1>
           {localIdentity ? <DetectedPlayerChip identity={localIdentity} onClick={onOpenMyProfile} /> : null}
         </div>
         <HeaderProfileSearch onSearch={onSearchProfile} />
@@ -1591,7 +1591,7 @@ function Settings({
     <div style={{ position: "relative", zIndex: 0, display: "flex", flexDirection: "column", gap: 24, maxWidth: 620, margin: "0 auto" }}>
       <ChampionSplashAccent championId="Lux" opacity={22} style={{ top: -60, left: -260, width: 420, height: 420 }} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-        <h1 style={{ fontFamily: FONT_HEADING, fontSize: 26, fontWeight: 400, margin: 0 }}>{t("Settings.title")}</h1>
+        <h1 style={{ fontFamily: FONT_HEADING, fontSize: TYPE.heading, fontWeight: 400, margin: 0 }}>{t("Settings.title")}</h1>
         {/* Explicit exit control inside the Settings screen itself —
             otherwise the only way out is the nav rail. */}
         <button

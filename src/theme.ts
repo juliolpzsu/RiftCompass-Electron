@@ -19,6 +19,18 @@ export const COLORS = {
 export const FONT_HEADING = "'Russo One', 'Manrope', sans-serif";
 export const FONT_BODY = "'Manrope', -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
 
+// Shared type scale — before this, every fontSize in the app was picked
+// per call site with no relation to any other (e.g. three page titles at
+// 22/24/26px for the exact same semantic role). Pick from this list
+// instead of inventing a new number.
+export const TYPE = {
+  label: 11,
+  body: 13,
+  subheading: 15,
+  heading: 20,
+  display: 26,
+} as const;
+
 // Shared inline-style builders. Previously copy-pasted (byte-for-byte in
 // some places, drifted in others) across MainView.tsx, profile/*.tsx,
 // and the tools/ screens.
