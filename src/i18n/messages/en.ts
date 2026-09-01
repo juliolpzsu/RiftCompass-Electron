@@ -45,6 +45,7 @@ export const en = {
     title: "Saved profiles",
     filterPlaceholder: "Filter…",
     noSavedProfiles: "No saved profiles yet.",
+    noSavedProfilesHint: "Search a Riot ID above to save one here.",
     noFilterMatches: "No saved profiles match.",
     noRankYet: "No rank data yet",
     recentWin: "W",

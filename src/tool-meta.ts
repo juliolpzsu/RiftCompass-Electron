@@ -53,3 +53,11 @@ export const TOOLS: ToolMeta[] = [
   { id: "championPool", icon: Layers, accent: "#6366d4", native: true },
   { id: "metaTierList", icon: Crown, accent: "#9aa5b1", native: true },
 ];
+
+// The Tools grid's "Compare Profiles" card isn't a ToolId (it opens the
+// duo-comparison view, not a tools/* route) — its accent lived as a bare
+// string literal in MainView.tsx, invisible to anyone updating the palette
+// above. Kept here as a sibling constant instead of forcing it into
+// ToolMeta/TOOLS, which are specifically the routes that mirror the web's
+// TOOL_ROUTES order.
+export const COMPARE_PROFILES_ACCENT = "#34d399";

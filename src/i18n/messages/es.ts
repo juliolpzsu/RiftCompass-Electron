@@ -33,6 +33,7 @@ export const es: Messages = {
     title: "Perfiles guardados",
     filterPlaceholder: "Filtrar…",
     noSavedProfiles: "Todavía no hay perfiles guardados.",
+    noSavedProfilesHint: "Busca un Riot ID arriba para guardarlo aquí.",
     noFilterMatches: "Ningún perfil guardado coincide.",
     noRankYet: "Sin datos de rango todavía",
     recentWin: "V",

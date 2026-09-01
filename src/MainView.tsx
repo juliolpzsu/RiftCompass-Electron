@@ -21,7 +21,7 @@ import { API_BASE_URL } from "./shared/api";
 import { ProfileScreen } from "./profile/ProfileDetail";
 import { ProfileCompareEntry } from "./profile/ProfileCompare";
 import { parseRiotId, type ProfileTarget } from "./profile/ProfileShared";
-import { TOOLS, type ToolId, type ToolMeta } from "./tool-meta";
+import { COMPARE_PROFILES_ACCENT, TOOLS, type ToolId, type ToolMeta } from "./tool-meta";
 import { GoldCalculator } from "./tools/GoldCalculator";
 import { WaveTimer } from "./tools/WaveTimer";
 import { JungleXpCalculator } from "./tools/JungleXpCalculator";
@@ -743,7 +743,11 @@ function SavedProfilesPanel({ onOpenProfile, textFilter }: { onOpenProfile: (tar
     return (
       <>
         {header}
-        <p style={{ fontSize: 13, color: COLORS.muted, margin: 0 }}>{t("SavedProfiles.noSavedProfiles")}</p>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 10, padding: "24px 20px" }}>
+          <Search size={28} color={COLORS.muted} style={{ opacity: 0.7 }} />
+          <p style={{ fontSize: TYPE.body, fontWeight: 600, color: COLORS.text, margin: 0 }}>{t("SavedProfiles.noSavedProfiles")}</p>
+          <p style={{ fontSize: TYPE.label, color: COLORS.muted, margin: 0, lineHeight: 1.5 }}>{t("SavedProfiles.noSavedProfilesHint")}</p>
+        </div>
       </>
     );
   }
@@ -1347,7 +1351,7 @@ function ToolsIndex({
         />
         {entries.map((entry) => {
           if (entry.kind === "compareProfiles") {
-            return <GridCard key="compareProfiles" icon={GitCompare} accent="#34d399" label={t("ToolsIndex.compareProfiles")} onClick={onOpenCompare} />;
+            return <GridCard key="compareProfiles" icon={GitCompare} accent={COMPARE_PROFILES_ACCENT} label={t("ToolsIndex.compareProfiles")} onClick={onOpenCompare} />;
           }
           const tool = entry.tool;
           return (

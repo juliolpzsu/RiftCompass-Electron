@@ -33,6 +33,7 @@ export const fr: Messages = {
     title: "Profils enregistrés",
     filterPlaceholder: "Filtrer…",
     noSavedProfiles: "Aucun profil enregistré pour l'instant.",
+    noSavedProfilesHint: "Recherchez un Riot ID ci-dessus pour l'enregistrer ici.",
     noFilterMatches: "Aucun profil enregistré ne correspond.",
     noRankYet: "Aucune donnée de rang pour l'instant",
     recentWin: "V",

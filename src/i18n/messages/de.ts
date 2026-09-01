@@ -33,6 +33,7 @@ export const de: Messages = {
     title: "Gespeicherte Profile",
     filterPlaceholder: "Filtern…",
     noSavedProfiles: "Noch keine gespeicherten Profile.",
+    noSavedProfilesHint: "Suche oben nach einer Riot-ID, um sie hier zu speichern.",
     noFilterMatches: "Kein gespeichertes Profil passt.",
     noRankYet: "Noch keine Rangdaten",
     recentWin: "S",
