@@ -433,6 +433,7 @@ export const es: Messages = {
     undo: "Deshacer",
     redo: "Rehacer",
     clear: "Borrar todo",
+    clearConfirm: "¿Borrar todo el mapa? No se puede deshacer.",
     export: "Exportar",
   },
   GoldCalculator: {

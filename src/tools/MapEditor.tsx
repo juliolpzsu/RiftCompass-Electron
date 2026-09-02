@@ -9,6 +9,7 @@ import {
   Plus,
   TextT as TypeIcon,
   User,
+  Warning,
   X,
 } from "@phosphor-icons/react";
 import { ChampionCombobox } from "../ChampionCombobox";
@@ -27,11 +28,12 @@ import summonersRiftMapUrl from "../assets/summoners-rift-map.jpg";
 // Ported from the web app's src/components/tools/map-editor.tsx — same
 // canvas drawing model, same fixed-turret calibration, same known fixes
 // already applied there (naturalWidth check before drawImage, degenerate-
-// stroke guard, constant on-screen icon size under zoom). Dropped on
-// purpose: save-to-account (saved_maps table, needs the web app's own DB)
-// and next-intl strings — notes+strokes persist to localStorage the same
-// way Draft Simulator/Personality Test do here, and Export still produces
-// a real PNG locally, so nothing about actually using the tool is lost.
+// stroke guard, constant on-screen icon size under zoom). Saves to the
+// account (createMap/getSavedMaps/deleteMap below), same real parity with
+// the web's saved_maps table as every other saveable tool here.
+// localStorage (DRAFT_KEY below) only holds the in-progress draft, same
+// pattern as Draft Simulator/Personality Test — not a stand-in for account
+// save.
 type Point = { x: number; y: number };
 type Tool =
   | "select"
@@ -932,7 +934,13 @@ export function MapEditor() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
+  // The only genuinely destructive action on this toolbar — it empties
+  // both the strokes AND the undo/redo stacks in the same call, so unlike
+  // every other tool here there's no way back once it runs. A native
+  // confirm() is the cheapest real guard against a stray click losing a
+  // map full of notes.
   function handleClear() {
+    if (!window.confirm(t("MapEditor.clearConfirm"))) return;
     setSelectedTextIndex(null);
     setStrokes([]);
     setRedoStack([]);
@@ -1143,8 +1151,8 @@ export function MapEditor() {
           <button onClick={handleRedo} disabled={redoStack.length === 0} style={pillButtonStyle(false, redoStack.length === 0)}>
             {t("MapEditor.redo")}
           </button>
-          <button onClick={handleClear} disabled={strokes.length === 0} style={pillButtonStyle(false, strokes.length === 0)}>
-            {t("MapEditor.clear")}
+          <button onClick={handleClear} disabled={strokes.length === 0} style={dangerPillButtonStyle(strokes.length === 0)}>
+            <Warning size={13} /> {t("MapEditor.clear")}
           </button>
           <button onClick={handleExport} disabled={strokes.length === 0} style={pillButtonStyle(false, strokes.length === 0)}>
             {t("MapEditor.export")}
@@ -1482,6 +1490,8 @@ function pillButtonStyle(active: boolean, disabled?: boolean): React.CSSProperti
   return {
     display: "flex",
     alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
     fontSize: 12,
     padding: "6px 12px",
     borderRadius: 6,
@@ -1490,6 +1500,17 @@ function pillButtonStyle(active: boolean, disabled?: boolean): React.CSSProperti
     color: disabled ? THEME.muted : active ? THEME.rose : THEME.text,
     cursor: disabled ? "not-allowed" : "pointer",
     opacity: disabled ? 0.5 : 1,
+  };
+}
+
+// The one genuinely destructive action on this toolbar (see handleClear) —
+// same shape as pillButtonStyle but always rose-bordered so it doesn't
+// blend in with Undo/Redo/Export.
+function dangerPillButtonStyle(disabled?: boolean): React.CSSProperties {
+  return {
+    ...pillButtonStyle(false, disabled),
+    border: `1px solid ${THEME.rose}`,
+    color: disabled ? THEME.muted : THEME.rose,
   };
 }
 

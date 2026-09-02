@@ -445,6 +445,7 @@ export const en = {
     undo: "Undo",
     redo: "Redo",
     clear: "Clear",
+    clearConfirm: "Clear the whole map? This can't be undone.",
     export: "Export",
   },
   GoldCalculator: {

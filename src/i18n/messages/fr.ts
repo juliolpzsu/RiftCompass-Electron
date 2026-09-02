@@ -433,6 +433,7 @@ export const fr: Messages = {
     undo: "Annuler",
     redo: "Rétablir",
     clear: "Effacer",
+    clearConfirm: "Effacer toute la carte ? Cette action est irréversible.",
     export: "Exporter",
   },
   GoldCalculator: {

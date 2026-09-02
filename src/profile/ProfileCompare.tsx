@@ -242,35 +242,72 @@ function CompareSlot({
 // the name so a player keeps one identity across the whole comparison.
 const COMPARE_ACCENTS = [COLORS.rose, "#4d9fe8", COLORS.gold, "#3ecf8e", "#9d6bf5"];
 
+type CompareSlot = { kind: "loading" } | ({ kind: "error" } & FetchProfileError) | { kind: "ok"; data: ProfileApiResponse };
+
+// Column count for the player-card row — matches the web's own
+// playerRows()/rowColsClass() grouping (RiftCompass-Web's duo/[platform]
+// page.tsx) so the same player count looks the same width on both. 2 and 3
+// already read as one full-width row under plain auto-fit at this
+// container's max-width (1100px); only 4 needed a forced 2-column row
+// (auto-fit alone gave 4 cramped ~250px columns instead of 2 wide ones),
+// and 5 was already special-cased as 3 + 2.
+function playerGridColumns(count: number): string {
+  if (count === 5) return "repeat(3, minmax(0, 1fr))";
+  if (count === 4) return "repeat(2, minmax(0, 1fr))";
+  return "repeat(auto-fit, minmax(240px, 1fr))";
+}
+
 function ProfileCompareResult({ targets, onReset }: { targets: ProfileTarget[]; onReset: () => void }) {
   const { t } = useI18n();
-  const [state, setState] = useState<
-    { kind: "loading" } | ({ kind: "error" } & FetchProfileError) | { kind: "ok"; profiles: ProfileApiResponse[] }
-  >({ kind: "loading" });
-  // Bumped by the retry button to re-run the fetch effect below without
-  // needing a real target change — without this, a rate-limit failure had
-  // no way to try again except leaving and re-entering the whole comparison.
-  const [retryToken, setRetryToken] = useState(0);
+  const [slots, setSlots] = useState<CompareSlot[]>(() => targets.map(() => ({ kind: "loading" })));
+  // One retry counter per slot (not a single shared token) — each restarts
+  // only that player's own RetryCountdownButton, without resetting anyone
+  // else's already-loaded data.
+  const [retryTokens, setRetryTokens] = useState<number[]>(() => targets.map(() => 0));
 
   const targetsKey = targets.map((x) => `${x.platform}/${x.gameName}#${x.tagLine}`).join("|");
+
+  // Every player fetched independently — a rate-limited or mistyped Riot ID
+  // for one player no longer discards the profiles that DID load; only that
+  // player's own card shows an error, with its own retry (see
+  // ComparePlayerSlot below).
   useEffect(() => {
     let cancelled = false;
-    setState({ kind: "loading" });
-    Promise.all(targets.map((x) => fetchProfile(x.platform, x.gameName, x.tagLine))).then((results) => {
-      if (cancelled) return;
-      const failed = results.find((r): r is FetchProfileError => "error" in r);
-      if (failed) {
-        setState({ kind: "error", error: failed.error, status: failed.status });
-        return;
-      }
-      setState({ kind: "ok", profiles: results as ProfileApiResponse[] });
+    setSlots(targets.map(() => ({ kind: "loading" })));
+    targets.forEach((target, i) => {
+      fetchProfile(target.platform, target.gameName, target.tagLine).then((result) => {
+        if (cancelled) return;
+        setSlots((prev) =>
+          prev.map((s, j) => (j === i ? ("error" in result ? { kind: "error", ...result } : { kind: "ok", data: result }) : s)),
+        );
+      });
     });
     return () => {
       cancelled = true;
     };
     // targetsKey covers every field of every target.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetsKey, retryToken]);
+  }, [targetsKey]);
+
+  function retrySlot(i: number) {
+    const target = targets[i];
+    setSlots((prev) => prev.map((s, j) => (j === i ? { kind: "loading" } : s)));
+    setRetryTokens((prev) => prev.map((n, j) => (j === i ? n + 1 : n)));
+    fetchProfile(target.platform, target.gameName, target.tagLine).then((result) => {
+      setSlots((prev) =>
+        prev.map((s, j) => (j === i ? ("error" in result ? { kind: "error", ...result } : { kind: "ok", data: result }) : s)),
+      );
+    });
+  }
+
+  // Original index kept (not the filtered array's own position), so a
+  // player keeps the same accent color in every section below even when an
+  // earlier player failed to load — see HeadToHeadTable's colorA/colorB and
+  // finding this replaced: a hardcoded rose/goodMild pair there used to
+  // drift out of sync with the accent every other section already used.
+  const successful = slots.flatMap((s, i) => (s.kind === "ok" ? [{ data: s.data, index: i }] : []));
+  const successfulProfiles = successful.map((s) => s.data);
+  const accents = successful.map((s) => COMPARE_ACCENTS[s.index % COMPARE_ACCENTS.length]);
 
   return (
     <div style={{ maxWidth: 1100, margin: "40px auto 0", display: "flex", flexDirection: "column", gap: 16 }}>
@@ -280,94 +317,133 @@ function ProfileCompareResult({ targets, onReset }: { targets: ProfileTarget[]; 
       >
         <X size={14} /> {t("ProfileSearch.searchAgain")}
       </button>
-      {state.kind === "loading" ? (
-        <p style={{ fontSize: 13, color: COLORS.muted, textAlign: "center", marginTop: 20 }}>{t("ProfileSearch.loading")}</p>
-      ) : state.kind === "error" ? (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginTop: 20 }}>
-          <p style={{ fontSize: 13, color: COLORS.rose, textAlign: "center", margin: 0 }}>
-            {t(`ProfileSearch.errors.${errorMessageKey(state.error, state.status)}`)}
-          </p>
-          <RetryCountdownButton
-            key={`${targetsKey}-${retryToken}`}
-            seconds={errorMessageKey(state.error, state.status) === "rateLimited" ? 30 : 5}
-            onRetry={() => setRetryToken((n) => n + 1)}
+      <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: 16 }}>
+        {/* Two players: the web /duo aesthetic — each player's top-mastery
+            champion as a big faded splash on their own side (same box
+            geometry as the web page: 1040x680 intruding 350px from each
+            edge, slightly rotated). MainView's scroll container clips
+            overflow-x, so the off-screen part can't cause a horizontal
+            scrollbar. With 3+ players the sides don't map to anyone, so
+            each card carries its own faded background instead. Only once
+            both have actually loaded — a splash keyed to a player who
+            failed to fetch has no champion id to show. */}
+        {successful.length === 2 && successfulProfiles[0].topMasteryChampionId ? (
+          <ChampionSplashAccent
+            championId={successfulProfiles[0].topMasteryChampionId}
+            opacity={18}
+            style={{ left: -690, top: 0, width: 1040, height: 680, transform: "rotate(-1deg)" }}
           />
-        </div>
-      ) : (
-        <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: 16 }}>
-          {/* Two players: the web /duo aesthetic — each player's top-mastery
-              champion as a big faded splash on their own side (same box
-              geometry as the web page: 1040x680 intruding 350px from each
-              edge, slightly rotated). MainView's scroll container clips
-              overflow-x, so the off-screen part can't cause a horizontal
-              scrollbar. With 3+ players the sides don't map to anyone, so
-              each card carries its own faded background instead. */}
-          {state.profiles.length === 2 && state.profiles[0].topMasteryChampionId ? (
-            <ChampionSplashAccent
-              championId={state.profiles[0].topMasteryChampionId}
-              opacity={18}
-              style={{ left: -690, top: 0, width: 1040, height: 680, transform: "rotate(-1deg)" }}
-            />
-          ) : null}
-          {state.profiles.length === 2 && state.profiles[1].topMasteryChampionId ? (
-            <ChampionSplashAccent
-              championId={state.profiles[1].topMasteryChampionId}
-              opacity={18}
-              style={{ right: -690, top: 0, width: 1040, height: 680, transform: "rotate(1deg)" }}
-            />
-          ) : null}
-          <h1 style={{ fontFamily: FONT_HEADING, fontSize: 22, fontWeight: 400, margin: 0 }}>
-            {state.profiles.map((data, i) => (
+        ) : null}
+        {successful.length === 2 && successfulProfiles[1].topMasteryChampionId ? (
+          <ChampionSplashAccent
+            championId={successfulProfiles[1].topMasteryChampionId}
+            opacity={18}
+            style={{ right: -690, top: 0, width: 1040, height: 680, transform: "rotate(1deg)" }}
+          />
+        ) : null}
+        <h1 style={{ fontFamily: FONT_HEADING, fontSize: 22, fontWeight: 400, margin: 0 }}>
+          {targets.map((target, i) => {
+            const slot = slots[i];
+            return (
               <span key={i}>
                 {i > 0 ? <span style={{ color: COLORS.muted }}> vs </span> : null}
                 <span style={{ color: COMPARE_ACCENTS[i % COMPARE_ACCENTS.length] }}>
-                  {data.profile.gameName}#{data.profile.tagLine}
+                  {slot.kind === "ok" ? `${slot.data.profile.gameName}#${slot.data.profile.tagLine}` : `${target.gameName}#${target.tagLine}`}
                 </span>
               </span>
-            ))}
-          </h1>
-          {/* Five players wrap as 3 + 2 instead of the auto-fit's 4 + 1. */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns:
-                state.profiles.length === 5 ? "repeat(3, minmax(0, 1fr))" : "repeat(auto-fit, minmax(240px, 1fr))",
-              gap: 16,
-              alignItems: "start",
-            }}
-          >
-            {state.profiles.map((data, i) => (
-              <ComparePlayerColumn
-                key={i}
-                data={data}
-                accent={COMPARE_ACCENTS[i % COMPARE_ACCENTS.length]}
-                withBackground={state.profiles.length > 2}
-              />
-            ))}
-          </div>
-          <RoadmapComparisonCard profiles={state.profiles} />
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: state.profiles.length === 2 ? "repeat(auto-fit, minmax(300px, 1fr))" : "1fr",
-              gap: 16,
-              alignItems: "start",
-            }}
-          >
-            <CompareSkillCard profiles={state.profiles} />
-            {state.profiles.length === 2 && (
-              <div style={cardStyle}>
-                <span style={{ fontSize: 16, fontWeight: 600 }}>{t("ProfileSearch.headToHead")}</span>
-                <p style={{ fontSize: 13, color: COLORS.muted, margin: "4px 0 12px" }}>{t("ProfileSearch.headToHeadIntro")}</p>
-                <HeadToHeadTable
-                  nameA={`${state.profiles[0].profile.gameName}#${state.profiles[0].profile.tagLine}`}
-                  nameB={`${state.profiles[1].profile.gameName}#${state.profiles[1].profile.tagLine}`}
-                  stats={computeHeadToHead(state.profiles[0].profile.recentMatches, state.profiles[1].profile.recentMatches)}
-                />
-              </div>
-            )}
-          </div>
-          <CompareSharedFocus profiles={state.profiles} />
+            );
+          })}
+        </h1>
+        <div style={{ display: "grid", gridTemplateColumns: playerGridColumns(targets.length), gap: 16, alignItems: "start" }}>
+          {slots.map((slot, i) => (
+            <ComparePlayerSlot
+              key={i}
+              slot={slot}
+              target={targets[i]}
+              accent={COMPARE_ACCENTS[i % COMPARE_ACCENTS.length]}
+              withBackground={targets.length > 2}
+              retryToken={retryTokens[i]}
+              onRetry={() => retrySlot(i)}
+            />
+          ))}
+        </div>
+        {/* Everything below needs at least 2 real profiles to compare —
+            unlike before, that no longer means every target has to
+            succeed, just two of them. */}
+        {successful.length >= 2 ? (
+          <>
+            <RoadmapComparisonCard profiles={successfulProfiles} accents={accents} />
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: successful.length === 2 ? "repeat(auto-fit, minmax(300px, 1fr))" : "1fr",
+                gap: 16,
+                alignItems: "start",
+              }}
+            >
+              <CompareSkillCard profiles={successfulProfiles} accents={accents} />
+              {successful.length === 2 && (
+                <div style={cardStyle}>
+                  <span style={{ fontSize: 16, fontWeight: 600 }}>{t("ProfileSearch.headToHead")}</span>
+                  <p style={{ fontSize: 13, color: COLORS.muted, margin: "4px 0 12px" }}>{t("ProfileSearch.headToHeadIntro")}</p>
+                  <HeadToHeadTable
+                    nameA={`${successfulProfiles[0].profile.gameName}#${successfulProfiles[0].profile.tagLine}`}
+                    nameB={`${successfulProfiles[1].profile.gameName}#${successfulProfiles[1].profile.tagLine}`}
+                    colorA={accents[0]}
+                    colorB={accents[1]}
+                    stats={computeHeadToHead(successfulProfiles[0].profile.recentMatches, successfulProfiles[1].profile.recentMatches)}
+                  />
+                </div>
+              )}
+            </div>
+            <CompareSharedFocus profiles={successfulProfiles} />
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+// One player's slot in the top row: the loaded column (ComparePlayerColumn)
+// once it succeeds, or that player's own name + error + retry while it
+// hasn't — never blocked on, or torn down by, any other slot's state.
+function ComparePlayerSlot({
+  slot,
+  target,
+  accent,
+  withBackground,
+  retryToken,
+  onRetry,
+}: {
+  slot: CompareSlot;
+  target: ProfileTarget;
+  accent: string;
+  withBackground: boolean;
+  retryToken: number;
+  onRetry: () => void;
+}) {
+  const { t } = useI18n();
+  if (slot.kind === "ok") {
+    return <ComparePlayerColumn data={slot.data} accent={accent} withBackground={withBackground} />;
+  }
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <span style={{ fontSize: 16, fontWeight: 600, borderLeft: `2px solid ${accent}`, paddingLeft: 8, color: accent }}>
+        {target.gameName}
+        <span style={{ color: COLORS.muted, fontWeight: 400 }}>#{target.tagLine}</span>
+      </span>
+      {slot.kind === "loading" ? (
+        <p style={{ fontSize: 12, color: COLORS.muted, margin: 0 }}>{t("ProfileSearch.loading")}</p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
+          <p style={{ fontSize: 12, color: COLORS.rose, margin: 0 }}>
+            {t(`ProfileSearch.errors.${errorMessageKey(slot.error, slot.status)}`)}
+          </p>
+          <RetryCountdownButton
+            key={retryToken}
+            seconds={errorMessageKey(slot.error, slot.status) === "rateLimited" ? 30 : 5}
+            onRetry={onRetry}
+          />
         </div>
       )}
     </div>
@@ -408,7 +484,7 @@ function RetryCountdownButton({ seconds, onRetry }: { seconds: number; onRetry: 
   );
 }
 
-function CompareSkillCard({ profiles }: { profiles: ProfileApiResponse[] }) {
+function CompareSkillCard({ profiles, accents }: { profiles: ProfileApiResponse[]; accents: string[] }) {
   const { t } = useI18n();
   const radars = profiles.map((p) => computeSkillRadar(p.profile.recentMatches, p.rankTier));
   const axes = radars[0] ?? [];
@@ -422,7 +498,7 @@ function CompareSkillCard({ profiles }: { profiles: ProfileApiResponse[] }) {
             <span style={{ fontSize: 13, color: COLORS.muted }}>{t(`ProfileSearch.axis.${AXIS_LABEL_KEY[axisPoint.axis]}`)}</span>
             {radars.map((points, pi) => {
               const value = points[ai]?.value ?? 0;
-              const accent = COMPARE_ACCENTS[pi % COMPARE_ACCENTS.length];
+              const accent = accents[pi];
               return (
                 <div key={pi} style={{ display: "flex", alignItems: "center", gap: 8 }}>
                   <div style={{ flex: 1, height: 6, borderRadius: 999, background: `${COLORS.background}99`, overflow: "hidden" }}>
@@ -437,7 +513,7 @@ function CompareSkillCard({ profiles }: { profiles: ProfileApiResponse[] }) {
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginTop: 14 }}>
         {profiles.map((p, pi) => (
-          <span key={pi} style={{ fontSize: 12, color: COMPARE_ACCENTS[pi % COMPARE_ACCENTS.length] }}>
+          <span key={pi} style={{ fontSize: 12, color: accents[pi] }}>
             {p.profile.gameName}#{p.profile.tagLine}
           </span>
         ))}
@@ -564,7 +640,7 @@ const ROADMAP_METRIC_ORDER: RoadmapMetric[] = ["csPerMin", "visionPerMin", "kda"
 // wash on the card background stands in for repeating each name next to
 // every value (the name is still stated once, in the priority list above
 // the table, and once more as a column header above the first metric row).
-function RoadmapComparisonCard({ profiles }: { profiles: ProfileApiResponse[] }) {
+function RoadmapComparisonCard({ profiles, accents }: { profiles: ProfileApiResponse[]; accents: string[] }) {
   const { t } = useI18n();
   const nodesPerPlayer = profiles.map((p) => computeRoadmap(p.profile.recentMatches, p.rankTier));
   const priorityPerPlayer = nodesPerPlayer.map((nodes) => nodes.find((n) => n.status === "below"));
@@ -578,7 +654,7 @@ function RoadmapComparisonCard({ profiles }: { profiles: ProfileApiResponse[] })
     profiles.length > 1
       ? `linear-gradient(to right, ${profiles
           .flatMap((_, i) => {
-            const accent = COMPARE_ACCENTS[i % COMPARE_ACCENTS.length];
+            const accent = accents[i];
             const stop = `${accent}1a`;
             const bandStart = (i / profiles.length) * 100;
             const bandEnd = ((i + 1) / profiles.length) * 100;
@@ -598,7 +674,7 @@ function RoadmapComparisonCard({ profiles }: { profiles: ProfileApiResponse[] })
       <ul style={{ display: "flex", flexDirection: "column", gap: 4, margin: "12px 0 0", padding: 0, listStyle: "none" }}>
         {profiles.map((p, i) => {
           const priority = priorityPerPlayer[i];
-          const accent = COMPARE_ACCENTS[i % COMPARE_ACCENTS.length];
+          const accent = accents[i];
           return (
             <li key={i} style={{ display: "flex", flexWrap: "wrap", alignItems: "baseline", gap: 6, fontSize: 14 }}>
               <span style={{ fontWeight: 600, color: accent }}>{p.profile.gameName}</span>
@@ -618,6 +694,7 @@ function RoadmapComparisonCard({ profiles }: { profiles: ProfileApiResponse[] })
             key={metric}
             metric={metric}
             profiles={profiles}
+            accents={accents}
             nodesPerPlayer={nodesPerPlayer}
             showNames={i === 0}
             isLast={i === ROADMAP_METRIC_ORDER.length - 1}
@@ -631,12 +708,14 @@ function RoadmapComparisonCard({ profiles }: { profiles: ProfileApiResponse[] })
 function RoadmapMetricRow({
   metric,
   profiles,
+  accents,
   nodesPerPlayer,
   showNames,
   isLast,
 }: {
   metric: RoadmapMetric;
   profiles: ProfileApiResponse[];
+  accents: string[];
   nodesPerPlayer: RoadmapNode[][];
   // Only the first metric row gets a name above its columns — every other
   // row skips it so it isn't repeated once per metric.
@@ -672,7 +751,7 @@ function RoadmapMetricRow({
               style={{
                 fontSize: 11,
                 fontWeight: 600,
-                color: COMPARE_ACCENTS[i % COMPARE_ACCENTS.length],
+                color: accents[i],
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -726,7 +805,7 @@ function RoadmapMetricRow({
               : `Roadmap.${metric}.${above ? "tipAbove" : "tipBelow"}.${node.band}`;
             return (
               <li key={i} style={{ fontSize: 12, color: COLORS.muted }}>
-                <span style={{ fontWeight: 600, color: COMPARE_ACCENTS[i % COMPARE_ACCENTS.length] }}>{p.profile.gameName}:</span> {t(tipKey)}
+                <span style={{ fontWeight: 600, color: accents[i] }}>{p.profile.gameName}:</span> {t(tipKey)}
               </li>
             );
           })}
@@ -839,13 +918,29 @@ export function CompareBlock({
 // Overview even at equal grid width — the difference is content density,
 // not column size. A border between rows gives each stat real vertical
 // weight instead of just a tight list of numbers.
-function HeadToHeadTable({ nameA, nameB, stats }: { nameA: string; nameB: string; stats: HeadToHeadStat[] }) {
+function HeadToHeadTable({
+  nameA,
+  nameB,
+  stats,
+  colorA = COLORS.rose,
+  colorB = COLORS.goodMild,
+}: {
+  nameA: string;
+  nameB: string;
+  stats: HeadToHeadStat[];
+  // Defaults only cover CompareBlock's own 2-player popover (no
+  // COMPARE_ACCENTS context there); ProfileCompareResult's call always
+  // passes the pair's real accent colors so a player's color stays
+  // consistent with the rest of that screen.
+  colorA?: string;
+  colorB?: string;
+}) {
   const { t } = useI18n();
   return (
     <div style={{ marginTop: 8 }}>
       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 700, marginBottom: 4 }}>
-        <span style={{ color: COLORS.rose }}>{nameA}</span>
-        <span style={{ color: COLORS.goodMild }}>{nameB}</span>
+        <span style={{ color: colorA }}>{nameA}</span>
+        <span style={{ color: colorB }}>{nameB}</span>
       </div>
       <div style={{ display: "flex", flexDirection: "column" }}>
         {stats.map((s, i) => {
@@ -862,9 +957,9 @@ function HeadToHeadTable({ nameA, nameB, stats }: { nameA: string; nameB: string
                 borderTop: i > 0 ? `1px solid ${COLORS.cardBorder}66` : "none",
               }}
             >
-              <span style={{ width: 64, flexShrink: 0, fontWeight: aBetter ? 700 : 400, color: aBetter ? COLORS.rose : COLORS.text }}>{s.valueA}</span>
+              <span style={{ width: 64, flexShrink: 0, fontWeight: aBetter ? 700 : 400, color: aBetter ? colorA : COLORS.text }}>{s.valueA}</span>
               <span style={{ flex: 1, textAlign: "center", color: COLORS.muted, fontSize: 12 }}>{t(`ProfileSearch.h2h.${s.key}`)}</span>
-              <span style={{ width: 64, flexShrink: 0, textAlign: "right", fontWeight: !aBetter ? 700 : 400, color: !aBetter ? COLORS.goodMild : COLORS.text }}>{s.valueB}</span>
+              <span style={{ width: 64, flexShrink: 0, textAlign: "right", fontWeight: !aBetter ? 700 : 400, color: !aBetter ? colorB : COLORS.text }}>{s.valueB}</span>
             </div>
           );
         })}

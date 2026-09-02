@@ -433,6 +433,7 @@ export const de: Messages = {
     undo: "Rückgängig",
     redo: "Wiederholen",
     clear: "Löschen",
+    clearConfirm: "Die gesamte Karte löschen? Das kann nicht rückgängig gemacht werden.",
     export: "Exportieren",
   },
   GoldCalculator: {
