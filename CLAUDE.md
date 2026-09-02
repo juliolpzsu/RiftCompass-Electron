@@ -323,3 +323,63 @@ morado genérico) y el mismo arreglo (rosa de los vientos vía
   cualquier otra ventana, la misma limitación de Windows documentada
   arriba para el overlay). Pendiente real: confirmar en real la próxima
   vez que se abra la app.
+- **Paridad de splash accents con la web (2026-09-02)**: `MainView.tsx`
+  tenía UN solo `ChampionSplashAccent` compartido por herramienta
+  (`TOOL_SPLASH_CHAMPION`, un campeón fijo por `openTool.id`, siempre
+  arriba-derecha). Sustituido por `TOOL_SPLASH_ACCENTS`: 3 accents por
+  herramienta con los mismos campeones que usa cada página equivalente
+  de la web (mismo patrón en zigzag: primario+secundario en el mismo
+  lado arriba/abajo, terciario al lado opuesto a media altura). Tamaños
+  reescalados hacia abajo respecto a los de la web a propósito: el panel
+  de herramienta aquí no tiene una columna centrada con márgenes anchos
+  donde sangrar (ocupa el ancho completo de la ventana menos el riel de
+  iconos), así que un accent del tamaño web (700-800px) se sentiría
+  desproporcionado sin ese margen — quedaron en el rango ~340-560px.
+  `npm run typecheck` limpio. **No verificado visualmente de punta a
+  punta**: al lanzar `npm run dev` y traer la ventana al frente con
+  automatización de escritorio, el intento de foco terminó sacando a
+  primer plano otra ventana de terminal de Julio (otra sesión de Claude
+  Code con un borrador sin enviar) — se abortó de inmediato para no
+  interferir con esa sesión, sin tocarla ni su contenido, y se cerró
+  limpiamente el proceso de Electron de desarrollo lanzado para esto.
+  Sí se confirmó una captura de la pantalla de herramientas y de un
+  panel de herramienta abierto antes de ese incidente (ambas
+  renderizaban correctamente), pero no las 3-4 herramientas distintas
+  que pedía la verificación completa. Pendiente real: confirmar
+  visualmente cada accent la próxima vez que se abra la app con el
+  escritorio despejado.
+- **Perfil: leyenda del calendario, ChampionPool+Roadmap emparejados,
+  pool rediseñado, última partida (2026-09-02)**: cuatro pedidos
+  puntuales de Julio sobre `src/profile/ProfileDetail.tsx`.
+  - **Leyenda del calendario desalineada**: en `ActivityCalendarCard`, la
+    fila "Bad day/Good day" vivía DENTRO del mismo contenedor
+    `maxWidth: 320, margin: "10px auto 0"` que centra la cuadrícula de
+    días — quedaba centrada junto con la cuadrícula en vez de pegada al
+    borde izquierdo real de la tarjeta, a diferencia de la web (donde la
+    leyenda ya es hermana del contenedor centrado, no su hija, y por eso
+    nunca tuvo este bug). Arreglado sacándola de ese contenedor a un
+    hermano de ancho completo, mismo patrón que la web.
+  - **ChampionPool + Roadmap emparejados** (pedido explícito, solo
+    escritorio): iban cada uno a ancho completo, como en la web — ahora
+    van en la misma fila `grid-template-columns:
+    repeat(auto-fit,minmax(340px,1fr))` que ya usaba el par
+    Calendar+ChampionOverview justo arriba. Divergencia deliberada de la
+    web (que los mantiene apilados) — no aplicar esto ahí sin que lo
+    pida.
+  - **Champion Pool rediseñado + timestamp de última partida**: mismo
+    cambio y mismo motivo que en la web — ver
+    `RiftCompass-Web/CLAUDE.md` (sección de de-slopping, misma fecha)
+    para el razonamiento completo. Aquí: `computeChampionPool()`
+    (`src/lib/profile-analysis.ts`) gana un campo `totalGames` por rol;
+    `ChampionPoolCard` antepone la señal de concentración (barra
+    segmentada + "X% de partidas con {campeón}", dorado + "one-trick"
+    desde 66%) a los chips de campeón ya existentes. Sin el CTA
+    "Build a focused pool" que sí lleva la web — aquí requeriría
+    enhebrar un callback de navegación desde `MainView` (dueño de
+    `setOpenToolId`) hasta `ProfileDetail.tsx`, que hoy no existe, y no
+    se justificaba solo por esto. `formatRelativeTime()` nuevo en
+    `profile-analysis.ts` (puerto literal del de `src/lib/utils.ts` de
+    la web) — "Last game {tiempo}" junto al nivel en la cabecera,
+    mismo `Intl.RelativeTimeFormat` con `locale` real de `useI18n()`.
+  - `npm run typecheck` limpio. No verificado visualmente (mismo motivo
+    que el punto anterior — pendiente confirmar con la app abierta).

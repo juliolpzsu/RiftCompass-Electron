@@ -69,21 +69,67 @@ const TITLEBAR_HEIGHT = 40;
 
 type Panel = "tools" | "settings" | "profile" | "compare";
 
-// One splash-art accent per tool detail screen, same "decoration only,
-// never the focal point" role as ToolsIndex/Settings/PersonalityTest's —
-// every tool gets one, picked for a loose thematic fit rather than at
-// random.
-const TOOL_SPLASH_CHAMPION: Record<ToolId, string> = {
-  goldCalculator: "TwistedFate",
-  waveTimer: "Zilean",
-  jungleXp: "Kayn",
-  cooldowns: "Katarina",
-  draft: "Azir",
-  personalityTest: "Yasuo",
-  championPool: "Aatrox",
-  tierList: "Jinx",
-  map: "Shen",
-  metaTierList: "Vayne",
+// Three splash-art accents per tool detail screen (2026-09-02: was one
+// shared accent keyed by TOOL_SPLASH_CHAMPION) — same champions and same
+// top/bottom-same-side + mid-height-opposite-side zigzag riftcompass.com's
+// tool pages use, so the two apps read as the same product. Sizes are
+// scaled down from web's (which bleeds into a centered column's wide
+// side gutters) since this panel has no such gutter — it's the full
+// window width minus the icon rail, so an accent this size already reads
+// as a real background presence without a wide margin to escape into.
+type SplashAccent = { championId: string; opacity: number; style: React.CSSProperties };
+
+const TOOL_SPLASH_ACCENTS: Record<ToolId, SplashAccent[]> = {
+  goldCalculator: [
+    { championId: "MissFortune", opacity: 28, style: { top: -40, right: -60, width: 560, height: 360, transform: "rotate(1deg)" } },
+    { championId: "TwistedFate", opacity: 20, style: { bottom: -30, right: -90, width: 480, height: 320, transform: "rotate(-2deg)" } },
+    { championId: "Vayne", opacity: 15, style: { top: "45%", left: -70, width: 360, height: 260, transform: "translateY(-50%) rotate(2deg)" } },
+  ],
+  waveTimer: [
+    { championId: "Azir", opacity: 28, style: { top: -40, right: -50, width: 560, height: 360, transform: "rotate(-1deg)" } },
+    { championId: "Corki", opacity: 20, style: { bottom: -40, right: -80, width: 480, height: 320, transform: "rotate(2deg)" } },
+    { championId: "Twitch", opacity: 15, style: { top: "48%", left: -60, width: 340, height: 240, transform: "translateY(-50%) rotate(-2deg)" } },
+  ],
+  jungleXp: [
+    { championId: "LeeSin", opacity: 28, style: { top: -40, left: -60, width: 560, height: 360, transform: "rotate(1deg)" } },
+    { championId: "Kindred", opacity: 20, style: { bottom: -30, left: -90, width: 480, height: 320, transform: "rotate(-2deg)" } },
+    { championId: "Zac", opacity: 15, style: { top: "50%", right: -70, width: 360, height: 260, transform: "translateY(-50%) rotate(2deg)" } },
+  ],
+  cooldowns: [
+    { championId: "Zilean", opacity: 26, style: { top: -30, right: -60, width: 540, height: 340, transform: "rotate(2deg)" } },
+    { championId: "Nasus", opacity: 20, style: { bottom: -30, right: -80, width: 460, height: 300, transform: "rotate(-1deg)" } },
+    { championId: "Ryze", opacity: 15, style: { top: "46%", left: -60, width: 340, height: 240, transform: "translateY(-50%) rotate(1deg)" } },
+  ],
+  draft: [
+    { championId: "Swain", opacity: 26, style: { top: -30, left: -50, width: 520, height: 340, transform: "rotate(-1deg)" } },
+    { championId: "Viktor", opacity: 18, style: { bottom: -30, left: -80, width: 460, height: 300, transform: "rotate(2deg)" } },
+    { championId: "Renata", opacity: 14, style: { top: "50%", right: -60, width: 340, height: 240, transform: "translateY(-50%) rotate(-2deg)" } },
+  ],
+  personalityTest: [
+    { championId: "Teemo", opacity: 28, style: { top: -30, right: -70, width: 480, height: 320, transform: "rotate(1deg)" } },
+    { championId: "Yasuo", opacity: 20, style: { bottom: -20, right: -100, width: 420, height: 280, transform: "rotate(-2deg)" } },
+    { championId: "Riven", opacity: 15, style: { top: "48%", left: -70, width: 320, height: 220, transform: "translateY(-50%) rotate(2deg)" } },
+  ],
+  championPool: [
+    { championId: "Neeko", opacity: 28, style: { top: -40, left: -60, width: 560, height: 360, transform: "rotate(1deg)" } },
+    { championId: "Senna", opacity: 20, style: { bottom: -30, left: -90, width: 480, height: 320, transform: "rotate(-2deg)" } },
+    { championId: "Karma", opacity: 14, style: { top: "48%", right: -60, width: 350, height: 250, transform: "translateY(-50%) rotate(-3deg)" } },
+  ],
+  tierList: [
+    { championId: "Sett", opacity: 26, style: { top: -30, right: -60, width: 520, height: 340, transform: "rotate(-1deg)" } },
+    { championId: "Draven", opacity: 20, style: { bottom: -30, right: -90, width: 460, height: 300, transform: "rotate(2deg)" } },
+    { championId: "Zed", opacity: 15, style: { top: "50%", left: -60, width: 340, height: 240, transform: "translateY(-50%) rotate(1deg)" } },
+  ],
+  map: [
+    { championId: "Shen", opacity: 24, style: { top: -30, left: -50, width: 520, height: 340, transform: "rotate(1deg)" } },
+    { championId: "Bard", opacity: 18, style: { bottom: -30, left: -80, width: 460, height: 300, transform: "rotate(-2deg)" } },
+    { championId: "Rakan", opacity: 14, style: { top: "52%", right: -60, width: 340, height: 240, transform: "translateY(-50%) rotate(2deg)" } },
+  ],
+  metaTierList: [
+    { championId: "Orianna", opacity: 26, style: { top: -30, left: -60, width: 540, height: 340, transform: "rotate(1deg)" } },
+    { championId: "Camille", opacity: 20, style: { bottom: -30, left: -90, width: 480, height: 320, transform: "rotate(2deg)" } },
+    { championId: "Aatrox", opacity: 16, style: { top: "50%", right: -70, width: 360, height: 250, transform: "translateY(-50%) rotate(-2deg)" } },
+  ],
 };
 
 export function MainView() {
@@ -242,7 +288,7 @@ export function MainView() {
               CLAUDE.md, "De-slopping" section, for the full history: two
               blurred circles, then compass-rose rays, both still read as
               the generic AI-hero glow underneath whatever color/shape wore
-              it). Real per-tool splash art (TOOL_SPLASH_CHAMPION) and
+              it). Real per-tool splash art (TOOL_SPLASH_ACCENTS) and
               profile screens' real top-mastery champion carry the depth
               job instead — no synthetic shape here, on purpose. */}
           {/* key changes on every real view switch (not on data reloading
@@ -316,11 +362,14 @@ export function MainView() {
             // personality quiz card, the reference tables) still caps
             // itself internally.
             <div style={{ position: "relative", zIndex: 0, display: "flex", flexDirection: "column", gap: 20 }}>
-              <ChampionSplashAccent
-                championId={TOOL_SPLASH_CHAMPION[openTool.id]}
-                opacity={18}
-                style={{ top: -32, right: -40, width: 520, height: 340 }}
-              />
+              {TOOL_SPLASH_ACCENTS[openTool.id].map((accent) => (
+                <ChampionSplashAccent
+                  key={accent.championId}
+                  championId={accent.championId}
+                  opacity={accent.opacity}
+                  style={accent.style}
+                />
+              ))}
               <button
                 onClick={() => setOpenToolId(null)}
                 style={{

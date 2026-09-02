@@ -336,6 +336,10 @@ export interface ChampionPoolEntry {
 export interface RolePool {
   position: (typeof KNOWN_POSITIONS)[number];
   champions: ChampionPoolEntry[];
+  /** Ported from the web's champion-pool.ts — every game in this role, not
+   * just the top MAX_PER_ROLE champions, so the UI can say "62% of your
+   * Jungle games are on Kayn" instead of just re-listing champions. */
+  totalGames: number;
 }
 
 const MAX_PER_ROLE = 3;
@@ -359,7 +363,7 @@ export function computeChampionPool(matches: RecentMatchSummary[]): RolePool[] {
       .slice(0, MAX_PER_ROLE)
       .map(([championName, stats]) => ({ championName, games: stats.games, wins: stats.wins }));
 
-    pools.push({ position, champions });
+    pools.push({ position, champions, totalGames: inRole.length });
   }
 
   return pools.sort((a, b) => {
@@ -458,4 +462,22 @@ export function buildActivityGrid(matches: Pick<RecentMatchSummary, "playedAt" |
     grid.push(byDay.get(key) ?? { date: key, games: 0, wins: 0, losses: 0 });
   }
   return grid;
+}
+
+// Ported from the web app's src/lib/utils.ts::formatRelativeTime — same
+// logic, same real locale passed in (from useI18n() here, not next-intl),
+// since this is a plain client render with no server/client split to
+// worry about, but the wrong-language-when-runtime-locale-differs concern
+// that made an explicit locale mandatory on the web still applies.
+export function formatRelativeTime(fromMs: number, locale: string): string {
+  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+  const diffMs = fromMs - Date.now();
+  const diffMinutes = Math.round(diffMs / 60_000);
+  if (Math.abs(diffMinutes) < 60) return rtf.format(diffMinutes, "minute");
+  const diffHours = Math.round(diffMs / 3_600_000);
+  if (Math.abs(diffHours) < 24) return rtf.format(diffHours, "hour");
+  const diffDays = Math.round(diffMs / 86_400_000);
+  if (Math.abs(diffDays) < 30) return rtf.format(diffDays, "day");
+  const diffMonths = Math.round(diffMs / (86_400_000 * 30));
+  return rtf.format(diffMonths, "month");
 }
