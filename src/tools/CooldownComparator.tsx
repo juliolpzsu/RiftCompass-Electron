@@ -104,7 +104,13 @@ function ChampionCooldownPanel({
     // everywhere else in this column.
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <span style={{ fontSize: 13, color: COLORS.muted }}>{t("Cooldowns.championLabel", { slot })}</span>
-      <ChampionCombobox champions={champions} value={champion} onChange={setChampion} placeholder={t("Cooldowns.selectPlaceholder")} />
+      <ChampionCombobox
+        champions={champions}
+        value={champion}
+        onChange={setChampion}
+        placeholder={t("Cooldowns.selectPlaceholder")}
+        noResultsLabel={t("Cooldowns.noResults")}
+      />
 
       {/* Always-visible custom stepper so there's no doubt the value is
           editable — the native number-input spinner is suppressed via

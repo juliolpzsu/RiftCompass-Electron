@@ -100,6 +100,7 @@ export const es: Messages = {
     unranked: "Sin clasificar",
     winLossRate: "{wins}V {losses}D · {rate}% de victorias",
     skillOverview: "Resumen de habilidades",
+    skillRadarVsBenchmark: "del benchmark",
     axis: { farm: "Farmeo", vision: "Visión", kda: "KDA", killParticipation: "Participación en kills", damage: "Daño" },
     rankTrend: "Tendencia de rango",
     notTrackedYet: "Todavía sin seguimiento en el tiempo.",
@@ -341,6 +342,7 @@ export const es: Messages = {
   Cooldowns: {
     championLabel: "Campeón {slot}",
     selectPlaceholder: "Buscar campeón…",
+    noResults: "No se han encontrado campeones.",
     abilityHasteLabel: "Celeridad de habilidad",
     increaseHaste: "Aumentar la celeridad de habilidad",
     decreaseHaste: "Reducir la celeridad de habilidad",
@@ -384,6 +386,7 @@ export const es: Messages = {
   },
   MapEditor: {
     intro: "Dibuja rotaciones, ganks y jugadas directamente sobre la Grieta del Invocador.",
+    championSearchNoResults: "No se encontraron campeones.",
     tools: {
       select: "Mover",
       pen: "Lápiz",
@@ -602,6 +605,7 @@ export const es: Messages = {
     },
   },
   ChampionPoolBuilder: {
+    searchNoResults: "No se encontraron campeones.",
     poolTitle: "Tu pool",
     poolIntro: "Picks principales que juegas más, picks flexibles para cobertura y un pocket pick.",
     addButton: "Añadir",

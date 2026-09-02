@@ -112,6 +112,7 @@ export const en = {
     unranked: "Unranked",
     winLossRate: "{wins}W {losses}L · {rate}% winrate",
     skillOverview: "Skill overview",
+    skillRadarVsBenchmark: "of benchmark",
     axis: { farm: "Farm", vision: "Vision", kda: "KDA", killParticipation: "Kill participation", damage: "Damage" },
     rankTrend: "Rank trend",
     notTrackedYet: "Not tracked over time yet.",
@@ -353,6 +354,7 @@ export const en = {
   Cooldowns: {
     championLabel: "Champion {slot}",
     selectPlaceholder: "Search champion…",
+    noResults: "No champions found.",
     abilityHasteLabel: "Ability haste",
     increaseHaste: "Increase ability haste",
     decreaseHaste: "Decrease ability haste",
@@ -396,6 +398,7 @@ export const en = {
   },
   MapEditor: {
     intro: "Sketch rotations, ganks, and plays directly on Summoner's Rift.",
+    championSearchNoResults: "No champions found.",
     tools: {
       select: "Move",
       pen: "Pen",
@@ -614,6 +617,7 @@ export const en = {
     },
   },
   ChampionPoolBuilder: {
+    searchNoResults: "No champions found.",
     poolTitle: "Your pool",
     poolIntro: "Core picks you play most, flex picks for coverage, and one pocket pick.",
     addButton: "Add",

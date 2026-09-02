@@ -147,7 +147,13 @@ export function ChampionPoolBuilder() {
 
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8, marginTop: 14 }}>
             <div style={{ maxWidth: 280, flex: 1 }}>
-              <ChampionCombobox champions={champions} value={pendingChampion} onChange={setPendingChampion} placeholder={t("Common.searchChampion")} />
+              <ChampionCombobox
+                champions={champions}
+                value={pendingChampion}
+                onChange={setPendingChampion}
+                placeholder={t("Common.searchChampion")}
+                noResultsLabel={t("ChampionPoolBuilder.searchNoResults")}
+              />
             </div>
             <button
               onClick={handleAdd}

@@ -100,6 +100,7 @@ export const de: Messages = {
     unranked: "Ohne Rang",
     winLossRate: "{wins}S {losses}N · {rate}% Winrate",
     skillOverview: "Skill-Übersicht",
+    skillRadarVsBenchmark: "des Benchmarks",
     axis: { farm: "Farm", vision: "Vision", kda: "KDA", killParticipation: "Kill-Beteiligung", damage: "Schaden" },
     rankTrend: "Rang-Trend",
     notTrackedYet: "Noch kein Verlauf erfasst.",
@@ -341,6 +342,7 @@ export const de: Messages = {
   Cooldowns: {
     championLabel: "Champion {slot}",
     selectPlaceholder: "Champion suchen…",
+    noResults: "Keine Champions gefunden.",
     abilityHasteLabel: "Ability Haste",
     increaseHaste: "Fähigkeitstempo erhöhen",
     decreaseHaste: "Fähigkeitstempo verringern",
@@ -384,6 +386,7 @@ export const de: Messages = {
   },
   MapEditor: {
     intro: "Skizziere Rotationen, Ganks und Spielzüge direkt auf Summoner's Rift.",
+    championSearchNoResults: "Keine Champions gefunden.",
     tools: {
       select: "Verschieben",
       pen: "Stift",
@@ -602,6 +605,7 @@ export const de: Messages = {
     },
   },
   ChampionPoolBuilder: {
+    searchNoResults: "Keine Champions gefunden.",
     poolTitle: "Dein Pool",
     poolIntro: "Core Picks, die du am meisten spielst, Flex Picks zur Absicherung und ein Pocket Pick.",
     addButton: "Hinzufügen",

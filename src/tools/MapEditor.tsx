@@ -395,7 +395,7 @@ const TOOLS: Tool[] = ["select", "pen", "arrow", "zone", "ward-normal", "ward-co
 const DRAFT_KEY = "riftcompass-overlay:map-editor:draft:v1";
 
 export function MapEditor() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [version, setVersion] = useState("");
   const [champions, setChampions] = useState<ChampionInfo[]>([]);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -1162,7 +1162,13 @@ export function MapEditor() {
 
       {tool === "champion" ? (
         <div style={{ maxWidth: 280 }}>
-          <ChampionCombobox champions={champions} value={selectedChampion} onChange={setSelectedChampion} placeholder={t("Common.searchChampion")} />
+          <ChampionCombobox
+            champions={champions}
+            value={selectedChampion}
+            onChange={setSelectedChampion}
+            placeholder={t("Common.searchChampion")}
+            noResultsLabel={t("MapEditor.championSearchNoResults")}
+          />
         </div>
       ) : null}
 
@@ -1236,7 +1242,7 @@ export function MapEditor() {
                     <span style={{ flex: 1, minWidth: 0, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {map.name}
                     </span>
-                    <span style={{ fontSize: 12, color: THEME.muted }}>{new Date(map.createdAt).toLocaleDateString()}</span>
+                    <span style={{ fontSize: 12, color: THEME.muted }}>{new Date(map.createdAt).toLocaleDateString(locale)}</span>
                     <button onClick={() => handleLoadMap(map.id)} style={pillButtonStyle(false, false)}>
                       {t("MapEditor.load")}
                     </button>
@@ -1504,13 +1510,15 @@ function pillButtonStyle(active: boolean, disabled?: boolean): React.CSSProperti
 }
 
 // The one genuinely destructive action on this toolbar (see handleClear) —
-// same shape as pillButtonStyle but always rose-bordered so it doesn't
-// blend in with Undo/Redo/Export.
+// same shape as pillButtonStyle but always destructive-bordered so it
+// doesn't blend in with Undo/Redo/Export. THEME.destructive, not rose: this
+// button can sit right next to a "Saved" message in the same rose the
+// toolbar otherwise uses for success, and the two shouldn't share a color.
 function dangerPillButtonStyle(disabled?: boolean): React.CSSProperties {
   return {
     ...pillButtonStyle(false, disabled),
-    border: `1px solid ${THEME.rose}`,
-    color: disabled ? THEME.muted : THEME.rose,
+    border: `1px solid ${THEME.destructive}`,
+    color: disabled ? THEME.muted : THEME.destructive,
   };
 }
 

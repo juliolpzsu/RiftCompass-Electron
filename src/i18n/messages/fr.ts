@@ -100,6 +100,7 @@ export const fr: Messages = {
     unranked: "Non classé",
     winLossRate: "{wins}V {losses}D · {rate}% de victoires",
     skillOverview: "Aperçu des compétences",
+    skillRadarVsBenchmark: "de la référence",
     axis: { farm: "Farm", vision: "Vision", kda: "KDA", killParticipation: "Participation aux kills", damage: "Dégâts" },
     rankTrend: "Tendance de rang",
     notTrackedYet: "Pas encore suivi dans le temps.",
@@ -341,6 +342,7 @@ export const fr: Messages = {
   Cooldowns: {
     championLabel: "Champion {slot}",
     selectPlaceholder: "Rechercher un champion…",
+    noResults: "Aucun champion trouvé.",
     abilityHasteLabel: "Accélération de compétence",
     increaseHaste: "Augmenter la hâte de compétence",
     decreaseHaste: "Diminuer la hâte de compétence",
@@ -384,6 +386,7 @@ export const fr: Messages = {
   },
   MapEditor: {
     intro: "Esquissez rotations, ganks et actions directement sur la Faille de l'invocateur.",
+    championSearchNoResults: "Aucun champion trouvé.",
     tools: {
       select: "Déplacer",
       pen: "Stylo",
@@ -602,6 +605,7 @@ export const fr: Messages = {
     },
   },
   ChampionPoolBuilder: {
+    searchNoResults: "Aucun champion trouvé.",
     poolTitle: "Votre pool",
     poolIntro: "Picks principaux que vous jouez le plus, picks flex pour la polyvalence, et un pocket pick.",
     addButton: "Ajouter",

@@ -17,8 +17,16 @@ const TEAM_COLORS: Record<DraftTeam, { border: string; bg: string; text: string 
   red: { border: "#f43f5e66", bg: "#f43f5e1a", text: "#fda4af" },
 };
 
+// Same draft-survives-a-remount pattern as this app's Map Editor/Champion
+// Pool Builder/Tier List Builder/Personality Test — leaving this screen
+// and coming back used to reset selections to empty, losing all picks and
+// bans. No "was this explicitly loaded from a save" guard, same as Map
+// Editor's own DRAFT_KEY: loading a saved draft just becomes the new
+// scratch too, which the persist effect below picks up on its own.
+const DRAFT_KEY = "riftcompass-overlay:draft-simulator:draft:v1";
+
 export function DraftSimulator() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [champions, setChampions] = useState<ChampionInfo[]>([]);
   const [selections, setSelections] = useState<string[]>([]);
   const [search, setSearch] = useState("");
@@ -31,11 +39,38 @@ export function DraftSimulator() {
   const [isSaving, setIsSaving] = useState(false);
   const [savedDrafts, setSavedDrafts] = useState<SavedDraft[] | null>(null);
   const [listOpen, setListOpen] = useState(false);
+  const [draftLoaded, setDraftLoaded] = useState(false);
 
   useEffect(() => {
     fetchChampionMap().then((m) => setChampions(Object.values(m.byInternalId)));
     window.riftcompass.getSession().then(setUser);
   }, []);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        const stored: string[] = JSON.parse(raw);
+        if (Array.isArray(stored) && stored.length > 0) setSelections(stored);
+      }
+    } catch {
+      // Corrupt/unavailable storage — start fresh.
+    }
+    setDraftLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (!draftLoaded) return;
+    try {
+      if (selections.length > 0) {
+        localStorage.setItem(DRAFT_KEY, JSON.stringify(selections));
+      } else {
+        localStorage.removeItem(DRAFT_KEY);
+      }
+    } catch {
+      // Ignore write failures.
+    }
+  }, [selections, draftLoaded]);
 
   const championById = useMemo(() => new Map(champions.map((c) => [c.internalId, c])), [champions]);
 
@@ -218,7 +253,7 @@ export function DraftSimulator() {
                     <span style={{ flex: 1, minWidth: 0, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {draft.name}
                     </span>
-                    <span style={{ fontSize: 12, color: COLORS.muted }}>{new Date(draft.createdAt).toLocaleDateString()}</span>
+                    <span style={{ fontSize: 12, color: COLORS.muted }}>{new Date(draft.createdAt).toLocaleDateString(locale)}</span>
                     <button
                       onClick={() => {
                         setSelections(draft.selections);

@@ -732,6 +732,20 @@ function SkillRadarSvg({ points }: { points: SkillRadarPoint[] }) {
         return <line key={i} x1={center} y1={center} x2={x} y2={y} stroke={COLORS.cardBorder} strokeWidth={1} />;
       })}
       <polygon points={polygon} fill={`${COLORS.rose}33`} stroke={COLORS.rose} strokeWidth={2} strokeLinejoin="round" />
+      {/* Same value-on-hover the web's SkillRadarChart gives via its
+          ChartTooltip — this hand-rolled SVG has no charting library to
+          supply that, so a native <title> per vertex (real browser
+          tooltip, no extra state/positioning code) is the direct
+          equivalent: previously the polygon's shape was the only signal,
+          with no way to read an exact number. */}
+      {points.map((p, i) => {
+        const [x, y] = coordFor(i, p.value);
+        return (
+          <circle key={`${p.axis}-dot`} cx={x} cy={y} r={4} fill={COLORS.rose} stroke={COLORS.background} strokeWidth={1.5}>
+            <title>{`${p.value}% ${t("ProfileSearch.skillRadarVsBenchmark")}`}</title>
+          </circle>
+        );
+      })}
       {points.map((p, i) => {
         const [x, y] = coordFor(i, maxValue + 30);
         return (

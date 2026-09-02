@@ -10,11 +10,16 @@ export function ChampionCombobox({
   value,
   onChange,
   placeholder = "Search a champion…",
+  noResultsLabel,
 }: {
   champions: ChampionInfo[];
   value: ChampionInfo | null;
   onChange: (champion: ChampionInfo | null) => void;
   placeholder?: string;
+  // Required, not defaulted to an English literal — same as the web's own
+  // ChampionCombobox, so every call site passes a real translated string
+  // instead of this component silently showing untranslated text.
+  noResultsLabel: string;
 }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -88,7 +93,7 @@ export function ChampionCombobox({
           }}
         >
           {results.length === 0 ? (
-            <div style={{ padding: 12, fontSize: 13, color: COLORS.muted }}>No champions found.</div>
+            <div style={{ padding: 12, fontSize: 13, color: COLORS.muted }}>{noResultsLabel}</div>
           ) : (
             results.map((c) => (
               <button
