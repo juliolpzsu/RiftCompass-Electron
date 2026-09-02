@@ -6,7 +6,7 @@ App de escritorio companion de riftcompass.com para League of Legends (Windows):
 
 El overlay in-game de una ventana normal no puede pintarse sobre League en modo pantalla completa exclusiva: en Windows, mientras un proceso tiene exclusividad, DWM no compone nada encima (lo confirman independientemente Discord, OBS y Steam sobre sus propios overlays). La única vía real, la que usa iTero, es el motor de overlay de **Overwolf** (`ow-electron`), que hookea `Present`/`EndScene` dentro del proceso del juego y solo se integra en una app Electron. Por eso la app se reescribió desde Tauri/Rust a Electron.
 
-**Estado**: Overwolf exige aprobación previa de Riot Games (Developer Portal) antes de dar acceso a los paquetes `@overwolf/ow-electron*`. Ver `docs/overwolf-registration.md` para el estado del trámite y qué queda. Mientras tanto la app corre sobre Electron normal: el overlay se ve en Borderless/Windowed, no en pantalla completa exclusiva. El cambio futuro queda aislado en `createOverlayWindow` (`electron/windows.ts`).
+**Estado (2026-09-02)**: los paquetes `@overwolf/ow-electron*` resultaron ser públicos en npm (ya instalados como devDependencies) — lo que de verdad exige aprobación previa de Riot Games es que la inyección real en League llegue a funcionar, no poder instalar nada. Eso significa que la integración ya está escrita y compila: `electron/overlayEngine.ts` (registro del juego, inyección, creación de la ventana overlay real vía el paquete de Overwolf) más los cambios de soporte en `electron/windows.ts`/`main.ts` para que el resto de la app (gameConnection.ts, ipc.ts) no tenga que saber cuál de los dos caminos está activo. `isOverwolfRuntime()` decide en el arranque; bajo el binario `electron` normal (la única distribución real hoy) el comportamiento es idéntico al de antes de este cambio. Ver `docs/overwolf-registration.md` para el detalle completo y qué falta probar en real (`npm run dev:overwolf`) en cuanto llegue la aprobación.
 
 ## Arquitectura
 
@@ -73,7 +73,7 @@ El overlay in-game de una ventana normal no puede pintarse sobre League en modo 
 
 ## Pendiente
 
-- Aprobación de Riot/Overwolf y sustitución de `createOverlayWindow` por la API real de Overwolf (`docs/overwolf-registration.md`).
+- Aprobación de Riot/Overwolf (`docs/overwolf-registration.md`) — la integración real ya está escrita (`electron/overlayEngine.ts`), solo falta poder probarla contra League de verdad y, tras eso, pasar `dist`/`release`/`pack:dir` de `electron-builder` a `@overwolf/ow-electron-builder`.
 - Confirmar visualmente los splash accents por herramienta (`TOOL_SPLASH_ACCENTS` en `MainView.tsx`) con la app abierta.
 - `artifactName` sin versión en el próximo release (ver Distribución).
 - Con bots en el equipo rival, champ select nunca reporta `championId` para `theirTeam`; comprobar en una partida emparejada con humanos si el oro por carril rival resuelve, y solo entonces investigar como bug.

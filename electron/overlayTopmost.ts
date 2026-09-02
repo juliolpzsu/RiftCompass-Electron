@@ -7,7 +7,7 @@
 // The standard fix (same one any overlay/utility app uses) is to
 // periodically re-assert topmost instead of trusting the one-time flag.
 
-import { getOverlayWindow } from "./windows";
+import { getOverlayWindow, isOwOverlayActive } from "./windows";
 
 const REASSERT_INTERVAL_MS = 1500;
 
@@ -16,6 +16,13 @@ let handle: ReturnType<typeof setInterval> | null = null;
 export function start(): void {
   if (handle) return;
   handle = setInterval(() => {
+    // Under the real ow-electron runtime the window is injected into
+    // League's own process — its stacking is Overwolf's own
+    // overlayOptions.zOrder, not Windows' "topmost band" this workaround
+    // exists for, so re-asserting setAlwaysOnTop() here would be
+    // meaningless at best on a window Electron doesn't actually manage
+    // the z-order of.
+    if (isOwOverlayActive()) return;
     getOverlayWindow()?.setAlwaysOnTop(true);
   }, REASSERT_INTERVAL_MS);
 }

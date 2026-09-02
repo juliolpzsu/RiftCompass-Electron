@@ -74,17 +74,56 @@ app una vez exista la cuenta, igual que se hizo aquí.
   exacto contra la sección "Hallazgo importante" de arriba antes de
   reenviar.
 
-## Notas para cuando retome esto Claude (tras la aprobación)
+## Progreso real (2026-09-02) — el código ya está escrito, falta el permiso de inyección
 
-- Objetivo final ya decidido por Julio: el overlay debe verse también con
-  el juego en pantalla completa exclusiva real (no solo Borderless).
-- **La migración a Electron está terminada y en producción** (ver
-  `RiftCompass-Electron/CLAUDE.md`): la app se distribuye ya vía GitHub
-  Releases con auto-update. Lo único que falta es el Paso 4 (sustituir la
-  ventana overlay "normal" por la API real de Overwolf), bloqueado hasta
-  que llegue este acceso.
-- Paquetes a instalar en cuanto haya acceso: `@overwolf/ow-electron`,
-  `@overwolf/ow-electron-builder`, `@overwolf/electron-is-overwolf`.
-  Sustituyen la creación de ventana "normal" en
-  `RiftCompass-Electron/electron/windows.ts`'s `createOverlayWindow` —
-  único punto de cambio previsto para ese paso.
+**Hallazgo que cambia el plan de arriba**: `@overwolf/ow-electron`,
+`@overwolf/ow-electron-builder` y `@overwolf/ow-electron-packages-types`
+resultaron estar **publicados públicamente en npm sin ninguna restricción de
+instalación** (verificado con `npm view`, y ya instalados como
+devDependencies aquí). Lo que Overwolf condiciona a la aprobación de Riot no
+es poder instalar los paquetes — es que la inyección real en el proceso de
+League llegue a funcionar (whitelisting del lado de su servidor). Esto
+significa que el Paso 4 ya se pudo escribir entero, con los tipos reales, sin
+esperar a nada:
+
+- **`electron/overlayEngine.ts`** (nuevo): la integración real contra
+  `IOverwolfOverlayApi` — `registerGames({ gamesIds: [kGameIds.LeagueofLegends] })`,
+  `game-launched` → `event.inject()`, `game-injected` → crea la ventana
+  overlay real vía `overlayApi.createWindow()` (mismo renderer/preload de
+  siempre, solo que inyectada en el proceso del juego en vez de una ventana
+  normal), `game-exit` → la oculta. Verificado línea a línea contra el propio
+  repo oficial de ejemplo de Overwolf
+  (`github.com/overwolf/ow-electron-packages-sample`), no adivinado.
+- **`electron/windows.ts`**: `createOverlayWindow()` (el camino de Electron
+  normal) queda intacto; `getOverlayWindow()`/`showOverlay()`/
+  `setOverlayInteractive()`/`broadcast()` ahora soportan ambos caminos sin
+  que main.ts/gameConnection.ts/ipc.ts hayan tenido que cambiar una sola
+  llamada — justo el "único punto de cambio" que ya se preveía.
+- **`electron/main.ts`**: `isOverwolfRuntime()` decide en el arranque cuál de
+  los dos caminos usar. Bajo el binario `electron` normal (la única
+  distribución real hoy) es exactamente el mismo comportamiento que antes de
+  este cambio — verificado en real con `npm run dev`, arranca limpio.
+- **`package.json`**: añadido el campo `"overwolf": { "packages": ["overlay"] }`
+  y un script nuevo `npm run dev:overwolf`, que lanza la app con el binario
+  real `ow-electron` en vez de `electron` (ya descargado, `npx ow-electron
+  --version` funciona). Sin la aprobación de Riot, `registerGames`/la
+  inyección real simplemente no harán nada útil todavía, pero esto permite
+  confirmar que `app.overwolf` existe y que la app arranca bajo el runtime
+  real sin esperar a nada más — **pendiente de probar en real** (no se
+  lanzó hoy por no interrumpir al usuario, que tenía el ordenador en uso
+  con otra cosa en ese momento).
+
+## Qué queda pendiente de verdad
+
+- Lo de siempre: Julio pide acceso en el Riot Developer Portal, Overwolf
+  whitelista la app tras verlo.
+- Una vez llegue: probar `npm run dev:overwolf` con League realmente
+  abierto (registro del juego, inyección, ventana overlay real apareciendo
+  sobre pantalla completa exclusiva) — el código ya escrito debería
+  funcionar tal cual, pero esto es la primera vez que se podrá verificar de
+  verdad contra el juego real.
+- Cuando eso funcione: cambiar `electron-builder` por
+  `@overwolf/ow-electron-builder` en los scripts `dist`/`release`/`pack:dir`
+  para que el instalador final también empaquete el binario `ow-electron`
+  en vez del `electron` normal (hoy sigue en `electron-builder` a propósito,
+  ya que el binario que se distribuye de verdad todavía es el normal).

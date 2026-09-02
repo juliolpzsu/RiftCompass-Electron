@@ -3,9 +3,21 @@
 
 import { BrowserWindow, screen } from "electron";
 import * as path from "node:path";
+import type { OverlayBrowserWindow } from "@overwolf/ow-electron-packages-types";
 
 let mainWindow: BrowserWindow | null = null;
+// Two mutually-exclusive backing stores for "the overlay window", one per
+// runtime: `overlayWindow` when running under plain Electron (today's only
+// path — a normal top-level BrowserWindow, invisible during real exclusive
+// fullscreen), `owOverlayWindow` when running under the `ow-electron` binary
+// with Riot/Overwolf's access granted (see overlayEngine.ts) — a window
+// actually injected into League's own process, visible in exclusive
+// fullscreen too. Exactly one is ever non-null at a time; every function
+// below picks whichever is set so every existing caller (main.ts,
+// gameConnection.ts, ipc.ts, overlayTopmost.ts) keeps working unmodified
+// regardless of which runtime created the window.
 let overlayWindow: BrowserWindow | null = null;
+let owOverlayWindow: OverlayBrowserWindow | null = null;
 
 // Frameless-window chrome channels (WindowControls.tsx / preload.ts) —
 // kept separate from src/bridge/commands.ts's CMD/EVT allowlist since
@@ -25,11 +37,13 @@ const RENDERER_URL = process.env.ELECTRON_RENDERER_URL;
 // rootDir is the project root, to let this share src/bridge/commands.ts's
 // CMD/EVT allowlist with the renderer) — dist/ sits two levels up.
 const DIST_INDEX = path.join(__dirname, "..", "..", "dist", "index.html");
-const PRELOAD = path.join(__dirname, "preload.js");
+// Exported: overlayEngine.ts's ow-electron-injected window needs the exact
+// same preload bridge as every other window here.
+export const PRELOAD = path.join(__dirname, "preload.js");
 // Same icon file electron-builder.yml points at for the packaged
 // installer — set here too so the dev-run window/taskbar icon isn't
 // Electron's own default.
-const APP_ICON = path.join(__dirname, "..", "..", "build", "icons", "icon.ico");
+export const APP_ICON = path.join(__dirname, "..", "..", "build", "icons", "icon.ico");
 
 function isOwnRendererUrl(url: string): boolean {
   if (RENDERER_URL) return url.startsWith(RENDERER_URL);
@@ -48,7 +62,9 @@ function lockToOwnRenderer(win: BrowserWindow): void {
   });
 }
 
-function loadRenderer(win: BrowserWindow, query?: string): void {
+// Exported: overlayEngine.ts's ow-electron-injected window loads the exact
+// same renderer bundle, just via a different window-creation API.
+export function loadRenderer(win: BrowserWindow, query?: string): void {
   lockToOwnRenderer(win);
   if (RENDERER_URL) {
     win.loadURL(query ? `${RENDERER_URL}/?${query}` : RENDERER_URL);
@@ -61,8 +77,29 @@ export function getMainWindow(): BrowserWindow | null {
   return mainWindow;
 }
 
+// Unified accessor regardless of which runtime owns the window — both
+// Overwolf's own sample app and this app's existing callers (main.ts's
+// Ctrl+Alt+R escape hatch, overlayTopmost.ts) operate on the plain
+// BrowserWindow either way (OverlayBrowserWindow.window is a real
+// BrowserWindow, per @overwolf/ow-electron-packages-types).
 export function getOverlayWindow(): BrowserWindow | null {
-  return overlayWindow;
+  return owOverlayWindow?.window ?? overlayWindow;
+}
+
+// True only when the ow-electron path (overlayEngine.ts) actually created
+// the window — overlayTopmost.ts uses this to skip its periodic
+// setAlwaysOnTop() re-assert there, since z-order for an injected overlay
+// is Overwolf's own overlayOptions.zOrder, not Electron's window-manager
+// concept of "always on top".
+export function isOwOverlayActive(): boolean {
+  return owOverlayWindow !== null;
+}
+
+// Called by overlayEngine.ts once its own `createWindow()` call resolves —
+// hands the result to the same module-level slot every other function here
+// already reads from, so nothing else needs to know which path created it.
+export function setOwOverlayWindow(win: OverlayBrowserWindow | null): void {
+  owOverlayWindow = win;
 }
 
 export function createMainWindow(): BrowserWindow {
@@ -135,6 +172,14 @@ export function markMainWindowQuitting(): void {
 // Click-through by default via setIgnoreMouseEvents — the renderer
 // explicitly asks to become interactive only while the cursor is over a
 // real control (see ipc.ts's overlay_set_interactive).
+//
+// Only the fallback path: under the real `ow-electron` binary with
+// Riot/Overwolf's access granted, overlayEngine.ts creates the actual
+// in-game window instead (via the overlay package's own createWindow(),
+// injected into League's process so it survives real exclusive
+// fullscreen — a normal top-level window like this one never does,
+// see the root CLAUDE.md's "Por qué Electron" for why). main.ts only
+// calls this one when overlayEngine.isOverwolfRuntime() is false.
 export function createOverlayWindow(): BrowserWindow {
   const { width, height } = screen.getPrimaryDisplay().size;
   overlayWindow = new BrowserWindow({
@@ -168,7 +213,19 @@ export function createOverlayWindow(): BrowserWindow {
   return overlayWindow;
 }
 
+// "Click-through" isn't the same concept in both runtimes: plain Electron
+// has no OS-level notion of it (setIgnoreMouseEvents is this app's own
+// approximation), while the overlay package treats it as a first-class
+// window option (`overlayOptions.passthrough`, mutated live — see
+// Overwolf's own sample doing the exact same `.overlayOptions.passthrough =`
+// assignment in its hotkey handlers). "passThroughAndNotify" (not plain
+// "passThrough") to keep the same forward-hover behavior
+// setIgnoreMouseEvents's `{ forward: true }` already relied on.
 export function setOverlayInteractive(interactive: boolean): void {
+  if (owOverlayWindow) {
+    owOverlayWindow.overlayOptions.passthrough = interactive ? "noPassThrough" : "passThroughAndNotify";
+    return;
+  }
   if (!overlayWindow) return;
   if (interactive) {
     overlayWindow.setIgnoreMouseEvents(false);
@@ -179,11 +236,14 @@ export function setOverlayInteractive(interactive: boolean): void {
 
 // showInactive(), not show(): the overlay must never steal focus/keyboard
 // input from the game, and Electron has no creation-time flag for that, so
-// every show has to opt out explicitly.
+// every show has to opt out explicitly. Same call either way — see
+// getOverlayWindow()'s comment on why OverlayBrowserWindow.window already
+// behaves like a normal BrowserWindow for this.
 export function showOverlay(show: boolean): void {
-  if (!overlayWindow) return;
-  if (show) overlayWindow.showInactive();
-  else overlayWindow.hide();
+  const win = getOverlayWindow();
+  if (!win) return;
+  if (show) win.showInactive();
+  else win.hide();
 }
 
 // Both the main window and the overlay load the same renderer bundle and
@@ -191,7 +251,7 @@ export function showOverlay(show: boolean): void {
 // off a `?view=` query param), so gameConnection.ts's events go to every
 // window, not a single webContents.send.
 export function broadcast(channel: string, payload?: unknown): void {
-  for (const win of [mainWindow, overlayWindow]) {
+  for (const win of [mainWindow, getOverlayWindow()]) {
     if (win && !win.isDestroyed()) win.webContents.send(channel, payload);
   }
 }

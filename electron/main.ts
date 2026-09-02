@@ -10,6 +10,7 @@ import { registerIpcHandlers } from "./ipc";
 import { initTelemetry } from "./telemetry";
 import { startAutoUpdater } from "./updater";
 import { createMainWindow, createOverlayWindow, getOverlayWindow, showMainWindow } from "./windows";
+import { initOverwolfOverlay, isOverwolfRuntime } from "./overlayEngine";
 
 // Before anything else can throw.
 initTelemetry();
@@ -63,7 +64,16 @@ if (!gotSingleInstanceLock) {
     applyContentSecurityPolicy();
     registerIpcHandlers();
     createMainWindow();
-    createOverlayWindow();
+    // Real ow-electron binary with Riot/Overwolf's access granted: the
+    // in-game window comes later, once League actually launches and gets
+    // injected (see overlayEngine.ts's game-injected handler) — nothing to
+    // create here yet. Plain `electron` binary (today's only real
+    // distribution): the normal top-level window, same as always.
+    if (isOverwolfRuntime()) {
+      initOverwolfOverlay();
+    } else {
+      createOverlayWindow();
+    }
 
     // Best-effort, never fatal: registration fails whenever another app
     // already owns Ctrl+Alt+R, and losing the escape-hatch hotkey must
