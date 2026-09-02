@@ -42,6 +42,7 @@ El overlay in-game de una ventana normal no puede pintarse sobre League en modo 
 - `npm run dev`: app completa (vite + proceso principal).
 - `npm run typecheck`: dos tsconfig (`tsconfig.json` para `src/`, `tsconfig.electron.json` para `electron/`, CommonJS).
 - `npm run build`, `npm run dist` (instalador NSIS en `release/`), `npm run release` (`electron-builder --publish always`, necesita `GH_TOKEN`).
+- **Acceso directo del escritorio siempre al día**: `RiftCompass.lnk` en el escritorio de Julio apunta a `release/win-unpacked/RiftCompass.exe`, que NO se regenera solo. Tras cualquier cambio en `src/` o `electron/` que se dé por terminado (commit), regenerar ese build con `npm run build && npx electron-builder --dir --win` antes de cerrar la sesión, para que la app que Julio abre desde el escritorio sea siempre la del código actual. Si la app está en ejecución, cerrarla desde el tray (Quit) primero; el exe en uso bloquea la extracción.
 - Para probar contra el LCU real: lanzar League con `RiotClientServices.exe --launch-product=league_of_legends --launch-patchline=live` (lanzar `LeagueClient.exe` directo da "Acceso denegado" por Vanguard).
 - Verificar en real, no solo con typecheck: el exe de desarrollo con `npm run dev`, capturas de la ventana con la skill de automatización de escritorio, y `[...document.images].filter(i => i.complete && i.naturalWidth === 0)` en DevTools para detectar iconos rotos.
 
