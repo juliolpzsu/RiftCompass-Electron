@@ -8,8 +8,6 @@
 // TLS: the LCU serves a self-signed cert on 127.0.0.1, so both transports
 // must explicitly trust it — plain https.request via `rejectUnauthorized:
 // false`, and the websocket via the same option passed to `ws`.
-//
-// Ported 1:1 from RiftCompass-Tauri/src-tauri/src/lcu.rs.
 
 import * as fs from "node:fs";
 import * as https from "node:https";

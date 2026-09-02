@@ -69,8 +69,7 @@ const TITLEBAR_HEIGHT = 40;
 
 type Panel = "tools" | "settings" | "profile" | "compare";
 
-// Three splash-art accents per tool detail screen (2026-09-02: was one
-// shared accent keyed by TOOL_SPLASH_CHAMPION) — same champions and same
+// Three splash-art accents per tool detail screen — same champions and same
 // top/bottom-same-side + mid-height-opposite-side zigzag riftcompass.com's
 // tool pages use, so the two apps read as the same product. Sizes are
 // scaled down from web's (which bleeds into a centered column's wide
@@ -284,13 +283,11 @@ export function MainView() {
       </div>
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <main style={{ position: "relative", zIndex: 0, flex: 1, minWidth: 0, overflowY: "auto", overflowX: "hidden", padding: "20px clamp(16px, 3vw, 48px)" }}>
-          {/* Ambient glow removed 2026-09-02 (see riftcompass.com's
-              CLAUDE.md, "De-slopping" section, for the full history: two
-              blurred circles, then compass-rose rays, both still read as
-              the generic AI-hero glow underneath whatever color/shape wore
-              it). Real per-tool splash art (TOOL_SPLASH_ACCENTS) and
-              profile screens' real top-mastery champion carry the depth
-              job instead — no synthetic shape here, on purpose. */}
+          {/* No synthetic ambient glow here, on purpose (a blurred blob
+              or ray motif reads as the generic AI-hero background no
+              matter its color). Real per-tool splash art
+              (TOOL_SPLASH_ACCENTS) and profile screens' real top-mastery
+              champion carry the depth job instead. */}
           {/* key changes on every real view switch (not on data reloading
               within the same view), so React remounts this div and its
               rc-view-enter animation replays — see global.css for why. */}
@@ -361,7 +358,15 @@ export function MainView() {
             // width; a tool that genuinely wants to stay narrow (the
             // personality quiz card, the reference tables) still caps
             // itself internally.
-            <div style={{ position: "relative", zIndex: 0, display: "flex", flexDirection: "column", gap: 20 }}>
+            // minHeight (not just a shrink-wrapped column): a short tool
+            // (Cooldown Comparator, Personality Test) has little enough
+            // content that this wrapper used to end right after it, so the
+            // bottom/mid-anchored splash accents below all landed clustered
+            // near the top and left the rest of the panel bare. A plain
+            // "100%" wouldn't reliably resolve up an auto-height ancestor
+            // chain, so a floor in px is the direct fix — tools already
+            // taller than this aren't affected.
+            <div style={{ position: "relative", zIndex: 0, display: "flex", flexDirection: "column", gap: 20, minHeight: 640 }}>
               {TOOL_SPLASH_ACCENTS[openTool.id].map((accent) => (
                 <ChampionSplashAccent
                   key={accent.championId}

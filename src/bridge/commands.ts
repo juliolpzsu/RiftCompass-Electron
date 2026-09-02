@@ -2,15 +2,13 @@
 // nothing outside this file should write a raw channel/event string. The
 // main process (electron/) must register `ipcMain.handle` for EXACTLY
 // these command names, and push events via `webContents.send` with
-// EXACTLY these event names. Kept snake_case/colon-separated to match the
-// original Tauri command surface 1:1 (see PROGRESS.md's migration note) —
-// no functional reason to rename channels while porting.
+// EXACTLY these event names.
 
 export const CMD = {
   /** invoke, no args. returns { connected, identity } — current LCU state */
   LcuGetState: "lcu_get_state",
-  /** invoke. args: { method, path, body? } — raw LCU REST passthrough */
-  LcuRequest: "lcu_request",
+  /** invoke. args: { path } — read-only LCU GET, limited to the paths ipc.ts allowlists */
+  LcuGet: "lcu_get",
   /** invoke. args: { interactive } — overlay window click-through toggle */
   OverlaySetInteractive: "overlay_set_interactive",
   /** invoke, no args — force-shows the overlay, fully interactive, for ability-bar calibration */

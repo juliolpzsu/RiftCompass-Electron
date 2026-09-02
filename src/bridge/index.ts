@@ -161,8 +161,8 @@ const api: RiftCompassApi = {
   onTabHeld: (cb) => subscribe(EVT.OverlayTabHeld, cb),
   onCalibrationStart: (cb) => subscribe(EVT.OverlayCalibrationStart, cb),
 
-  request: <T = unknown>(method: string, path: string, body?: unknown): Promise<T> =>
-    tryInvoke<T>(CMD.LcuRequest, { method, path, body }, () => {
+  lcuGet: <T = unknown>(path: string): Promise<T> =>
+    tryInvoke<T>(CMD.LcuGet, { path }, () => {
       throw new Error("LCU backend not available");
     }),
 

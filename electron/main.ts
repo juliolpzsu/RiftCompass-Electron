@@ -1,6 +1,6 @@
 // Backend bootstrap of the RiftCompass desktop app: app lifecycle
 // (single-instance, autostart, tray, global shortcut) and window
-// creation. Ported from RiftCompass-Tauri/src-tauri/src/lib.rs's run().
+// creation.
 
 import { app, globalShortcut, session } from "electron";
 import * as gameConnection from "./gameConnection";
@@ -14,26 +14,14 @@ import { createMainWindow, createOverlayWindow, getOverlayWindow, showMainWindow
 // Before anything else can throw.
 initTelemetry();
 
-// Set as a real response header on every request (not index.html's old
-// <meta> tag) so script-src's 'unsafe-eval' can actually be conditional on
-// dev vs. production — a static <meta> tag ships identically in both,
-// which is why the index.html version's own comment ("the production
-// build doesn't use eval, so this is a floor, not a ceiling") wasn't
-// actually true: Vite doesn't strip or rewrite meta tags per-mode, so
-// 'unsafe-eval' shipped to the packaged app too (found in a 2026-09-01
-// security review). style-src keeps 'unsafe-inline' unconditionally in
-// both modes — that one's for real inline style={{}} props this app
-// renders throughout, not just Vite's dev-mode <style> injection, so it's
-// not a dev-only concern the way script-src's eval requirement is.
-//
-// script-src's 'unsafe-inline' in dev is likewise a floor, not a ceiling:
-// @vitejs/plugin-react injects an inline <script type="module"> preamble
-// into the dev HTML to wire up Fast Refresh, and without it the renderer
-// throws "can't detect preamble" and never mounts — a real regression hit
-// the same day this CSP was added (blank white window, both for Julio and
-// in an agent's own launch attempts). The production build never injects
-// that preamble (everything's bundled into external files), so this stays
-// dev-only exactly like 'unsafe-eval' above.
+// Set as a real response header on every request (not a <meta> tag in
+// index.html) so script-src's 'unsafe-eval' and 'unsafe-inline' can be
+// dev-only: a static <meta> tag ships identically to dev and production.
+// Both are needed by Vite in dev (HMR client uses eval; the React plugin
+// injects an inline Fast Refresh preamble, without which the renderer
+// throws "can't detect preamble" and never mounts) and by nothing in the
+// packaged build. style-src keeps 'unsafe-inline' in both modes for the
+// real inline style={{}} props this app renders throughout.
 function applyContentSecurityPolicy(): void {
   const isDev = !app.isPackaged;
   const csp = [
@@ -75,24 +63,19 @@ if (!gotSingleInstanceLock) {
     applyContentSecurityPolicy();
     registerIpcHandlers();
     createMainWindow();
+    createOverlayWindow();
 
-    // Everything downstream (showOverlay, setOverlayInteractive) already
-    // no-ops when the window doesn't exist.
-    const ENABLE_OVERLAY = true;
-    if (ENABLE_OVERLAY) {
-      createOverlayWindow();
-      // Best-effort, never fatal: registration fails whenever another app
-      // already owns Ctrl+Alt+R, and losing the escape-hatch hotkey must
-      // not cost the rest of the app.
-      const registered = globalShortcut.register("Control+Alt+R", () => {
-        const overlay = getOverlayWindow();
-        if (!overlay) return;
-        if (overlay.isVisible()) overlay.hide();
-        else overlay.showInactive();
-      });
-      if (!registered) {
-        console.error("global shortcut ctrl+alt+r not registered");
-      }
+    // Best-effort, never fatal: registration fails whenever another app
+    // already owns Ctrl+Alt+R, and losing the escape-hatch hotkey must
+    // not cost the rest of the app.
+    const registered = globalShortcut.register("Control+Alt+R", () => {
+      const overlay = getOverlayWindow();
+      if (!overlay) return;
+      if (overlay.isVisible()) overlay.hide();
+      else overlay.showInactive();
+    });
+    if (!registered) {
+      console.error("global shortcut ctrl+alt+r not registered");
     }
 
     createTray();

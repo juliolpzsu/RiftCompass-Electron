@@ -152,11 +152,9 @@ interface LiveGameData {
 // takes over, Grubs simply despawn to make room for Herald in the same
 // jungle pit.
 //
-// Verified live 2026-08-28 against the current wiki (Void Grubs added
-// s2024, timings have shifted patch to patch since) — the old
-// HERALD_SPAWN_SECONDS = 8*60 here was stale, from before Void Grubs
-// existed: https://wiki.leagueoflegends.com/en-us/Voidgrub_camp,
-// https://www.leagueoflegends.com/en-us/news/game-updates/patch-14-1-notes/
+// Season constants; timings shift patch to patch, so re-check them against
+// https://wiki.leagueoflegends.com/en-us/Voidgrub_camp and the current
+// patch notes when a season changes rather than assuming they still hold.
 const DRAGON_FIRST_SPAWN_SECONDS = 5 * 60;
 const DRAGON_RESPAWN_SECONDS = 5 * 60;
 const VOID_GRUBS_SPAWN_SECONDS = 8 * 60;
@@ -174,10 +172,9 @@ const BARON_RESPAWN_SECONDS = 6 * 60;
 const CLASSIC_GAME_MODE = "CLASSIC";
 
 // Real minimap objective icons (Community Dragon's minimap icon atlas,
-// same hosting pattern as rankEmblemUrl/positionIconUrl) — verified to
-// exist 2026-08-30, including a real Void Grubs icon ("grub.png", added
-// when Community Dragon caught up with the champion's s2024 addition) —
-// no more text-label fallback needed for any of the four.
+// same hosting pattern as rankEmblemUrl/positionIconUrl). The minimap
+// atlas is the one that has a Void Grubs icon ("grub.png"); the scoreboard
+// atlas doesn't.
 type ObjectiveKind = "dragon" | "herald" | "baron" | "voidGrubs";
 
 const OBJECTIVE_ICON: Record<ObjectiveKind, string> = {
@@ -330,8 +327,8 @@ function resolveLanePlayer(
   if (!info) return undefined;
   // Live Client Data reports the English internal id for real players,
   // but a bot-controlled champion's name comes back in the client's own
-  // display locale (verified live 2026-08-31: "Maestro Yi" for
-  // MasterYi under a Spanish-locale client) — normalized matching
+  // display locale ("Maestro Yi" for MasterYi under a Spanish-locale
+  // client) — normalized matching
   // against champions.byNormalizedName (populated with both forms by
   // mergeLocalizedChampionNames) covers both.
   return allPlayers.find((p) => championInfoFor(champions, p.championName) === info);
@@ -484,8 +481,8 @@ export function OverlayView() {
     window.riftcompass.onPhase((p) => setPhase(p));
     window.riftcompass.onChampSelectSession((session) => {
       // The LCU sends one final teardown event the moment champ select ends
-      // (verified live, 2026-08-30: not JS null, but a payload with no real
-      // myTeam array — e.g. a "Delete" JSON-API event with {} data) — an
+      // (not JS null, but a payload with no real myTeam array — e.g. a
+      // "Delete" JSON-API event with {} data) — an
       // `if (!s) return` guard alone doesn't catch that shape, and
       // overwriting with `s.myTeam ?? []` still wipes the roster right
       // before InProgress starts. Only accept updates that actually carry a
@@ -568,7 +565,7 @@ export function OverlayView() {
       if (!player.puuid || requestedPuuids.current.has(player.puuid)) continue;
       requestedPuuids.current.add(player.puuid);
       window.riftcompass
-        .request<{ gameName: string; tagLine: string }>("GET", `/lol-summoner/v1/summoners/puuid/${player.puuid}`)
+        .lcuGet<{ gameName: string; tagLine: string }>(`/lol-summoner/v1/summoners/puuid/${player.puuid}`)
         .then((info) => {
           setSummoners((prev) => ({ ...prev, [player.puuid!]: { gameName: info.gameName, tagLine: info.tagLine } }));
         })
@@ -648,7 +645,7 @@ export function OverlayView() {
   useEffect(() => {
     if ((phase !== "ChampSelect" && phase !== "InProgress") || localRankTier !== null) return;
     window.riftcompass
-      .request<{ queueMap?: Record<string, { tier?: string }> }>("GET", "/lol-ranked-stats/v1/current-ranked-stats")
+      .lcuGet<{ queueMap?: Record<string, { tier?: string }> }>("/lol-ranked-stats/v1/current-ranked-stats")
       .then((stats) => {
         const tier = stats.queueMap?.RANKED_SOLO_5x5?.tier;
         if (tier) setLocalRankTier(tier);

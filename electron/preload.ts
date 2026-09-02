@@ -1,7 +1,6 @@
 // Runs in an isolated context with access to Node/Electron APIs, but the
 // renderer only ever sees what's explicitly exposed below via
-// contextBridge — same "no raw Node in the page" boundary Tauri's IPC
-// gave the old build for free. See src/bridge/index.ts for how
+// contextBridge. See src/bridge/index.ts for how
 // __electronBridge__ becomes the full window.riftcompass API, and
 // windows.ts's WINDOW_CHANNELS for the window-chrome channel names.
 
@@ -15,7 +14,7 @@ import { WINDOW_CHANNELS } from "./windows";
 // calling __electronBridge__.invoke with an arbitrary string. Checking
 // the channel against this same allowlist here, inside trusted preload
 // code, makes CMD/EVT an actual enforcement point instead of just
-// documentation (found in a 2026-09-01 security review).
+// documentation.
 const INVOKABLE_CHANNELS: ReadonlySet<string> = new Set(Object.values(CMD));
 const LISTENABLE_CHANNELS: ReadonlySet<string> = new Set(Object.values(EVT));
 

@@ -1,11 +1,9 @@
 // Windows DPAPI encrypt/decrypt for small blobs, tied to the logged-in OS
 // user. Used by account.ts for the session token at rest — the token is
-// never written in plaintext. Ported from
-// RiftCompass-Tauri/src-tauri/src/dpapi.rs (raw Win32 CryptProtectData/
-// CryptUnprotectData) to @primno/dpapi, a prebuilt binding of the exact
-// same Win32 API — same one-user, no-UI-popup semantics ("CurrentUser"
-// scope is the equivalent of the Rust side's default hProv/no window
-// handle, and this package never shows UI either).
+// never written in plaintext. @primno/dpapi is a prebuilt binding of the
+// Win32 CryptProtectData/CryptUnprotectData pair; "CurrentUser" scope
+// means only the same Windows account can decrypt, and no UI is ever
+// shown.
 
 import { Dpapi } from "@primno/dpapi";
 

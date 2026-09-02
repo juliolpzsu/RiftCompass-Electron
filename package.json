@@ -2,7 +2,7 @@
   "name": "riftcompass-electron",
   "private": true,
   "version": "0.1.0",
-  "description": "RiftCompass desktop companion (Electron rewrite of RiftCompass-Tauri, to gain access to Overwolf's in-game overlay engine) — champ-select scouting and live in-game coaching, reading the League client locally.",
+  "description": "RiftCompass desktop companion: champ-select scouting and live in-game coaching, reading the League client locally.",
   "author": "RiftCompass",
   "main": "dist-electron/electron/main.js",
   "scripts": {

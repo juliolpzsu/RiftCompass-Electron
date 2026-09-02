@@ -2,10 +2,8 @@
 // (app.getLoginItemSettings, registry-backed on Windows) so it can never
 // drift from what's actually registered; overlay module toggles and the
 // UI locale persist to a small settings.json in the app's userData dir.
-//
-// Ported 1:1 from RiftCompass-Tauri/src-tauri/src/settings.rs — same
-// tolerant field-by-field JSON parsing (unknown/missing fields fall back
-// individually instead of discarding the whole file), same defaults.
+// Parsing is tolerant field by field: an unknown or missing field falls
+// back to its default individually instead of discarding the whole file.
 
 import { app } from "electron";
 import * as fs from "node:fs";

@@ -160,8 +160,7 @@ body {
    background/border/color swap on selection (rank tier, role filter,
    category filters...) — those set new inline values on click with no
    transition of their own, so this shared rule is what makes the color
-   change glide instead of snapping (Julio, 2026-09-01: quiere más
-   sensación de fluidez). `transform` adds real press feedback (a button
+   change glide instead of snapping. `transform` adds real press feedback (a button
    should feel like it heard the click), scale kept subtle per Emil
    Kowalski's guidance (0.95-0.98) so it reads as a press, not a wobble. */
 button:not(:disabled) {
@@ -188,10 +187,9 @@ textarea:focus-visible {
 /* Dropdown menu options (DropdownMenu/dropdownOptionStyle, ProfileShared.tsx):
    background: "none" at rest means the generic button:hover brightness
    filter above has nothing to brighten — text-only anti-aliasing barely
-   moves, so picking a different option felt dead compared to a native
-   <select>'s own hover highlight (Julio, 2026-09-01, after the platform
-   picker's native <select>s were replaced with this custom dropdown). A
-   real background on hover, not just a filter. */
+   moves, so picking a different option feels dead compared to a native
+   <select>'s own hover highlight. A real background on hover, not just a
+   filter. */
 .rc-dropdown-option:hover {
   background: rgba(255, 255, 255, 0.08);
 }
@@ -199,10 +197,8 @@ textarea:focus-visible {
 /* DropdownMenu panel (ProfileShared.tsx) — moved out of inline styles so
    the gradient border below can use a ::before pseudo-element, which
    inline React styles can't reach. Glass background (blur, matching the
-   overlay HUD's own cardStyle) instead of the flat COLORS.card panel this
-   replaced — Julio, 2026-09-01: wanted the dropdown to read as considered,
-   not just functional, after the platform-select's native <select>s were
-   swapped for this custom one. */
+   overlay HUD's own cardStyle) rather than a flat panel, so the dropdown
+   reads as part of the same visual system as the rest of the controls. */
 .rc-dropdown-panel {
   position: relative;
   background: linear-gradient(180deg, rgba(30, 23, 32, 0.92), rgba(17, 13, 20, 0.92));
@@ -295,10 +291,9 @@ details[open] > summary svg {
 }
 
 /* Main content area's view switch (Herramientas grid <-> a tool <->
-   perfil <-> comparar <-> ajustes): previously an instant hard swap with
-   zero transition, the most-repeated navigation in the app and the main
-   thing that read as abrupt (Julio, 2026-09-01: quiere más "sensación de
-   fluidez"). A one-shot mount animation (keyframes, not a transition —
+   perfil <-> comparar <-> ajustes): the most-repeated navigation in the
+   app, and an instant hard swap there reads as abrupt. A one-shot mount
+   animation (keyframes, not a transition —
    there's nothing to interrupt, the old view is simply gone) replays
    every time MainView.tsx remounts this wrapper under a new `key`. Kept
    short (this happens a few times per session, not hundreds — see the

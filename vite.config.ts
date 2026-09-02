@@ -10,9 +10,8 @@ export default defineConfig({
   // stay relative.
   base: "./",
   clearScreen: false,
-  // A different port than RiftCompass-Tauri's 1420 (kept until the
-  // Electron rewrite is verified) — both dev servers may run side by
-  // side during the migration.
+  // Fixed port: package.json's dev:electron waits on it and electron/
+  // main.ts's dev CSP allowlists it.
   server: {
     port: 1421,
     strictPort: true,

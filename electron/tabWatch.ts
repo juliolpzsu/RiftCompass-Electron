@@ -6,12 +6,9 @@
 //
 // GetAsyncKeyState reads global keyboard state, the same mechanism any
 // global hotkey already relies on — it never touches the League process's
-// memory or window, so it isn't something Vanguard flags.
-//
-// Ported 1:1 from RiftCompass-Tauri/src-tauri/src/tab_watch.rs — koffi
-// (a prebuilt FFI library, no native compilation on the user's machine)
-// calling the exact same Win32 GetAsyncKeyState the Rust `windows` crate
-// called.
+// memory or window, so it isn't something Vanguard flags. koffi is a
+// prebuilt FFI library (no native compilation on the user's machine)
+// calling the Win32 GetAsyncKeyState directly.
 
 import koffi from "koffi";
 import { EVT } from "../src/bridge/commands";

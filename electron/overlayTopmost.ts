@@ -6,8 +6,6 @@
 // z-order, and a game engine does exactly that on every focus change.
 // The standard fix (same one any overlay/utility app uses) is to
 // periodically re-assert topmost instead of trusting the one-time flag.
-//
-// Ported 1:1 from RiftCompass-Tauri/src-tauri/src/overlay_topmost.rs.
 
 import { getOverlayWindow } from "./windows";
 

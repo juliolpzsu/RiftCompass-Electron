@@ -59,9 +59,8 @@ export interface LcuIdentity {
   profileIconId: number;
   // The League client's own display locale (e.g. "es_ES") — Live Client
   // Data reports bot-controlled champion names in this locale rather
-  // than Data Dragon's English internal id (verified live 2026-08-31),
-  // so OverlayView.tsx uses it to fetch a matching localized champion
-  // name lookup.
+  // than Data Dragon's English internal id, so OverlayView.tsx uses it to
+  // fetch a matching localized champion name lookup.
   gameClientLocale?: string;
 }
 
@@ -102,7 +101,7 @@ export interface SavedProfileWithRank {
   rank: SavedProfileRank | null;
 }
 
-// Backend-synced (riftcompass.com's saved_profile_folders, 2026-08-26) —
+// Backend-synced (riftcompass.com's saved_profile_folders) —
 // same real data the web's own ProfilePanel reads/writes. isDefault marks
 // the one folder that always exists, is renameable, and can't be deleted.
 export interface SavedProfileFolder {
@@ -124,7 +123,7 @@ export type ToggleSavedProfileResult =
   | ({ ok: true; saved: boolean } & SavedProfilesPayload)
   | { ok: false; error: string };
 
-// Backend-synced (riftcompass.com's saved_tier_lists, 2026-08-26) — same
+// Backend-synced (riftcompass.com's saved_tier_lists) — same
 // real data the web's own Tier List "Save tier list"/"My tier lists" reads
 // and writes. `board` is the tier-list board's own
 // { [tier | "unranked"]: championId[] } shape.
@@ -184,7 +183,8 @@ export interface RiftCompassApi {
   onLiveGameData: (cb: (data: unknown) => void) => void;
   onTabHeld: (cb: (held: boolean) => void) => void;
   onCalibrationStart: (cb: () => void) => void;
-  request: <T = unknown>(method: string, path: string, body?: unknown) => Promise<T>;
+  /** Read-only LCU GET; the main process only serves the paths it allowlists. */
+  lcuGet: <T = unknown>(path: string) => Promise<T>;
   setInteractive: (interactive: boolean) => void;
   // Ability-bar calibration: enterCalibration shows the overlay and makes
   // it fully interactive (not click-through) so the user can click their

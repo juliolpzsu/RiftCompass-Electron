@@ -1,7 +1,5 @@
 // Registers every ipcMain.handle for the CMD.* allowlist in
-// src/bridge/commands.ts — the renderer-facing counterpart of
-// RiftCompass-Tauri/src-tauri/src/lib.rs's #[tauri::command] surface plus
-// its invoke_handler list.
+// src/bridge/commands.ts.
 
 import { ipcMain, shell } from "electron";
 import { CMD, EVT } from "../src/bridge/commands";
@@ -14,11 +12,21 @@ import { broadcast, getMainWindow, setOverlayInteractive, showOverlay, WINDOW_CH
 
 const FLASH_ID = 4;
 
+// The only LCU endpoints the renderer may read directly (OverlayView.tsx's
+// teammate Riot IDs and the local player's ranked tier). Every other LCU
+// call, and every write, stays inside the main process behind a dedicated
+// command, so a renderer bug can never turn into an arbitrary request
+// against the League client.
+const RENDERER_READABLE_LCU_PATHS = ["/lol-summoner/v1/summoners/puuid/", "/lol-ranked-stats/v1/current-ranked-stats"];
+
 export function registerIpcHandlers(): void {
   ipcMain.handle(CMD.LcuGetState, () => connectionSnapshot());
-  ipcMain.handle(CMD.LcuRequest, (_e, { method, path, body }: { method: string; path: string; body?: unknown }) =>
-    lcuRequest(currentCreds(), method, path, body),
-  );
+  ipcMain.handle(CMD.LcuGet, (_e, { path }: { path: string }) => {
+    if (typeof path !== "string" || !RENDERER_READABLE_LCU_PATHS.some((prefix) => path.startsWith(prefix))) {
+      throw new Error(`LCU path not readable from the renderer: ${path}`);
+    }
+    return lcuRequest(currentCreds(), "GET", path);
+  });
 
   ipcMain.handle(CMD.OverlaySetInteractive, (_e, { interactive }: { interactive: boolean }) => {
     setOverlayInteractive(interactive);

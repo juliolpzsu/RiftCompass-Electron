@@ -38,10 +38,10 @@ export function CooldownComparator() {
   }, []);
 
   return (
-    // A vertical divider between the two columns instead of no separation
-    // at all, now that neither panel sits in its own bordered card (web's
-    // 2026-09-01 redesign added the same `sm:divide-x` — a plain gap alone
-    // left the two panels looking unrelated instead of one A/B comparison).
+    // A vertical divider between the two columns, since neither panel sits
+    // in its own bordered card (same `sm:divide-x` as the web version — a
+    // plain gap alone left the two panels looking unrelated instead of one
+    // A/B comparison).
     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(280px, 1fr))", gap: 32 }}>
       <ChampionCooldownPanel slot="A" champions={champions} version={version} />
       <div style={{ borderLeft: `1px solid ${COLORS.cardBorder}`, paddingLeft: 32, marginLeft: -32 }}>
@@ -97,7 +97,12 @@ function ChampionCooldownPanel({
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    // gap 18, not 14 — the transition from the ability-haste row straight
+    // into the loading/list/empty-state paragraph below it is bare text on
+    // both sides (no box/border giving it padding the way the combobox
+    // above does), so the same gap value read visibly tighter there than
+    // everywhere else in this column.
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <span style={{ fontSize: 13, color: COLORS.muted }}>{t("Cooldowns.championLabel", { slot })}</span>
       <ChampionCombobox champions={champions} value={champion} onChange={setChampion} placeholder={t("Cooldowns.selectPlaceholder")} />
 

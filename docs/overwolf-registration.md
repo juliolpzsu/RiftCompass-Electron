@@ -78,14 +78,11 @@ app una vez exista la cuenta, igual que se hizo aquí.
 
 - Objetivo final ya decidido por Julio: el overlay debe verse también con
   el juego en pantalla completa exclusiva real (no solo Borderless).
-- **La migración a Electron ya está en marcha, no es solo un plan**: ver
-  `RiftCompass-Electron/` (proyecto hermano, `RiftCompass-Tauri/` sigue
-  intacta) y su propio `CLAUDE.md` para arquitectura y estado. El puerto
-  del frontend y de todo el backend Rust → Node está hecho y verificado
-  visualmente (misma pinta exacta, navegación entre herramientas, tier
-  list, ajustes). Falta: verificación end-to-end contra el LCU real con
-  League abierto, y el Paso 4 (sustituir la ventana overlay "normal" por
-  la API real de Overwolf) — bloqueado hasta que llegue este acceso.
+- **La migración a Electron está terminada y en producción** (ver
+  `RiftCompass-Electron/CLAUDE.md`): la app se distribuye ya vía GitHub
+  Releases con auto-update. Lo único que falta es el Paso 4 (sustituir la
+  ventana overlay "normal" por la API real de Overwolf), bloqueado hasta
+  que llegue este acceso.
 - Paquetes a instalar en cuanto haya acceso: `@overwolf/ow-electron`,
   `@overwolf/ow-electron-builder`, `@overwolf/electron-is-overwolf`.
   Sustituyen la creación de ventana "normal" en

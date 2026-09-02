@@ -1,6 +1,5 @@
-// Window creation and lifecycle — ported from
-// RiftCompass-Tauri/src-tauri/src/lib.rs's create_overlay_window,
-// show_main_window and the window-spec parts of tauri.conf.json.
+// Window creation and lifecycle: the frameless main window and the
+// transparent in-game overlay.
 
 import { BrowserWindow, screen } from "electron";
 import * as path from "node:path";
@@ -32,7 +31,25 @@ const PRELOAD = path.join(__dirname, "preload.js");
 // Electron's own default.
 const APP_ICON = path.join(__dirname, "..", "..", "build", "icons", "icon.ico");
 
+function isOwnRendererUrl(url: string): boolean {
+  if (RENDERER_URL) return url.startsWith(RENDERER_URL);
+  return url.startsWith("file:");
+}
+
+// Both windows carry the privileged preload bridge, so they must only ever
+// display this app's own renderer: any navigation elsewhere (a stray link,
+// a dropped file, a future remote-content bug) and any window.open is
+// refused. External links go through ipc.ts's shell_open_external, which
+// hands an https://riftcompass.com URL to the OS browser instead.
+function lockToOwnRenderer(win: BrowserWindow): void {
+  win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
+  win.webContents.on("will-navigate", (event, url) => {
+    if (!isOwnRendererUrl(url)) event.preventDefault();
+  });
+}
+
 function loadRenderer(win: BrowserWindow, query?: string): void {
+  lockToOwnRenderer(win);
   if (RENDERER_URL) {
     win.loadURL(query ? `${RENDERER_URL}/?${query}` : RENDERER_URL);
   } else {
@@ -85,8 +102,7 @@ export function createMainWindow(): BrowserWindow {
 
   // WindowControls.tsx's maximize/restore icon needs to reflect real OS
   // state (e.g. after a double-click on the title bar, or Win+Up), not
-  // just its own button clicks — same "resized" signal Tauri's
-  // onResized gave it.
+  // just its own button clicks.
   const notifyResized = () => mainWindow?.webContents.send(WINDOW_CHANNELS.resized);
   mainWindow.on("resize", notifyResized);
   mainWindow.on("maximize", notifyResized);
@@ -162,21 +178,18 @@ export function setOverlayInteractive(interactive: boolean): void {
 }
 
 // showInactive(), not show(): the overlay must never steal focus/keyboard
-// input from the game (Tauri's .focused(false) at creation covered the
-// first show; Electron has no such creation-time flag, so every
-// subsequent show has to opt out the same way).
+// input from the game, and Electron has no creation-time flag for that, so
+// every show has to opt out explicitly.
 export function showOverlay(show: boolean): void {
   if (!overlayWindow) return;
   if (show) overlayWindow.showInactive();
   else overlayWindow.hide();
 }
 
-// Tauri's `app.emit` broadcasts an event to every window's webview at
-// once — both the main window and the overlay load the same renderer
-// bundle and both subscribe to the same bridge events (App.tsx picks
-// which view to render off a `?view=` query param, not off a different
-// bundle), so gameConnection.ts's events need the same broadcast, not a
-// single webContents.send.
+// Both the main window and the overlay load the same renderer bundle and
+// subscribe to the same bridge events (App.tsx picks which view to render
+// off a `?view=` query param), so gameConnection.ts's events go to every
+// window, not a single webContents.send.
 export function broadcast(channel: string, payload?: unknown): void {
   for (const win of [mainWindow, overlayWindow]) {
     if (win && !win.isDestroyed()) win.webContents.send(channel, payload);

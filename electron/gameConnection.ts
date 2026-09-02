@@ -1,14 +1,11 @@
 // Owns the whole lifecycle of talking to the League client: polling for
 // the lockfile, connecting/reconnecting the LCU websocket, tracking the
 // gameflow phase, and polling Live Client Data while a match is running.
-// Pushes state to the frontend via the same event names as the old Tauri
-// build (src/bridge/commands.ts's EVT map).
+// Pushes state to the frontend via src/bridge/commands.ts's EVT map.
 //
 // Runs as one long-lived loop started from main.ts; the current
-// credentials live in module state so the lcu_request and build_import
-// IPC handlers can use the same connection.
-//
-// Ported 1:1 from RiftCompass-Tauri/src-tauri/src/game_connection.rs.
+// credentials live in module state so the lcu_get and build_import IPC
+// handlers can use the same connection.
 
 import type WebSocket from "ws";
 import { EVT } from "../src/bridge/commands";
@@ -92,9 +89,9 @@ async function getLocalIdentity(c: LcuCredentials): Promise<unknown> {
   const region = (regionLocale as Record<string, unknown>).region;
   const platform = typeof region === "string" ? REGION_TO_PLATFORM[region.toUpperCase()] : undefined;
   // The actual client locale (e.g. "es_ES") — Live Client Data reports
-  // champion names in this locale for bot-controlled champions (verified
-  // live 2026-08-31: "Maestro Yi" for MasterYi, not the English Data
-  // Dragon key), so the overlay needs it to build a matching localized
+  // champion names in this locale for bot-controlled champions ("Maestro
+  // Yi" for MasterYi under a Spanish client, not the English Data Dragon
+  // key), so the overlay needs it to build a matching localized
   // champion-name lookup (see OverlayView.tsx's resolveLanePlayer).
   const gameClientLocale = (regionLocale as Record<string, unknown>).locale;
   if (platform && gameName && tagLine) {

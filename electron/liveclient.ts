@@ -3,8 +3,6 @@
 // reachable while a match is actually running; same self-signed loopback
 // trust model as the LCU. The payload is passed through as raw JSON — the
 // shapes are Riot's and only the frontend consumes them.
-//
-// Ported 1:1 from RiftCompass-Tauri/src-tauri/src/liveclient.rs.
 
 import * as https from "node:https";
 

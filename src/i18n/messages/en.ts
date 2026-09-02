@@ -7,7 +7,7 @@
 // app's copy never drifts from the web app's — save/login-to-save strings
 // from those namespaces are dropped since this app doesn't have that
 // feature for them (no account database behind Draft/MapEditor here).
-// TierList is the one exception (2026-08-26): it IS backend-synced now
+// TierList is the one exception: it IS backend-synced
 // (see main/account.ts's getSavedTierLists/createTierList/deleteTierList),
 // so its own save/my-tier-lists strings ARE kept, just reworded slightly
 // for this app's own compact inline panel instead of the web's separate

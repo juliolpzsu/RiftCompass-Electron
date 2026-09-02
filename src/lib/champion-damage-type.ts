@@ -19,12 +19,9 @@
 // sources, not just "can build either") — Kai'Sa, Kayle, Kog'Maw, Corki,
 // Varus, Ezreal, Smolder.
 //
-// Three champions are left unclassified (`null`) rather than guessed:
-// Locke, Yunara, and Zaahen are too recent — there was no reliable kit
-// knowledge to classify them from at the time, only their class tags,
-// which the methodology note above says aren't reliable enough alone.
-// Fill these in by hand once their kits are known rather than leaving a
-// guess in place.
+// A champion whose kit isn't known yet is left `null` rather than guessed
+// from its class tags. Kept in sync with the web copy; see that file's
+// header for the maintenance policy.
 export type DamageType = "AD" | "AP" | "mixed";
 
 export const CHAMPION_DAMAGE_TYPE: Record<string, DamageType | null> = {

@@ -33,7 +33,7 @@ export function ChampionSplashAccent({
         // Opaque core widened from 35%: a face sitting anywhere past it
         // was landing in the fade-to-transparent band and reading as
         // smudged rather than just softly vignetted.
-        // 5 stops, not 2 (same fix as the web app's version, 2026-09-02):
+        // 5 stops, not 2 (same fix as the web app's version):
         // a straight `black 48%, transparent 100%` ramp drops alpha at a
         // constant rate, and the eye's own edge enhancement turns the
         // point where that ramp ends into a visible ring against the

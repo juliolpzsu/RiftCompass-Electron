@@ -23,10 +23,10 @@ export interface ChampionMaps {
   // mergeLocalizedChampionNames adds them, the League client's own
   // display-locale name ("maestroyi" for "Maestro Yi"). Needed because
   // Live Client Data reports BOT-controlled champions' names in the
-  // client's display locale, not the English internal id (verified live
-  // 2026-08-31 against a Spanish-locale client: "Maestro Yi" for
-  // MasterYi, "Twisted Fate"/"Xin Zhao" with a space where the internal
-  // id has none) — see OverlayView.tsx's resolveLanePlayer.
+  // client's display locale, not the English internal id (under a
+  // Spanish-locale client: "Maestro Yi" for MasterYi, "Twisted Fate"/
+  // "Xin Zhao" with a space where the internal id has none) — see
+  // OverlayView.tsx's resolveLanePlayer.
   byNormalizedName: Record<string, ChampionInfo>;
 }
 

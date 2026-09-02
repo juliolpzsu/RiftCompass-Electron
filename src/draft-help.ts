@@ -30,12 +30,10 @@ export interface ChampionWinrateEntry {
 
 export interface DraftSuggestion {
   champion: ChampionInfo;
-  // Real crawler data (2026-08-29) — present whenever this pick's role+
-  // champion combo has cleared the crawler's own sample floor
-  // (MIN_GAMES_FOR_WINRATE in the web's champion-stats.ts). Checked live
-  // against iTero's own champ-select coach: unlike its plain icon-only
-  // suggestion list, this is real winrate the player can actually judge
-  // instead of trusting blind.
+  // Real crawler data — present whenever this pick's role+champion combo
+  // has cleared the crawler's own sample floor (MIN_GAMES_FOR_WINRATE in
+  // the web's champion-stats.ts), so the player can judge the number
+  // instead of trusting an icon-only suggestion blind.
   winRate?: number;
   games?: number;
   // Set only for the fallback picks below — a real winrate-ranked

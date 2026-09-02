@@ -98,8 +98,12 @@ export function ProfileCompareEntry() {
     // Two columns instead of one centered narrow form — a plain-text pitch
     // on the left doubling as a table of contents for the results screen,
     // the form on the right split off with a border instead of its own
-    // boxed card.
-    <div style={{ display: "flex", gap: 40, alignItems: "flex-start", flexWrap: "wrap", marginTop: 24 }}>
+    // boxed card. Same two champions as the web's /duo entry form (Braum,
+    // Nami) — this screen had no splash art at all before, unlike every
+    // other tool/profile screen.
+    <div style={{ position: "relative", zIndex: 0, display: "flex", gap: 40, alignItems: "flex-start", flexWrap: "wrap", marginTop: 24 }}>
+      <ChampionSplashAccent championId="Braum" opacity={18} style={{ top: "38%", right: -60, width: 420, height: 300, transform: "translateY(-50%) rotate(-1deg)" }} />
+      <ChampionSplashAccent championId="Nami" opacity={16} style={{ bottom: -60, left: -60, width: 460, height: 300, transform: "rotate(2deg)" }} />
       <div style={{ flex: "1 1 320px", display: "flex", flexDirection: "column", gap: 20 }}>
         <div>
           <h1 style={{ fontFamily: FONT_HEADING, fontSize: 22, fontWeight: 400, margin: 0 }}>{t("ProfileSearch.compareTitle")}</h1>

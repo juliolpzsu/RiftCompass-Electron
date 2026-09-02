@@ -3,8 +3,6 @@
 // Deliberately does NOT fabricate a "recommended" build from aggregate
 // stats RiftCompass doesn't have — it re-applies the player's own most
 // recent real game on this champion.
-//
-// Ported 1:1 from RiftCompass-Tauri/src-tauri/src/build_import.rs.
 
 import { lcuRequest, type LcuCredentials } from "./lcu";
 

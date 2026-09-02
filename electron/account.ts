@@ -4,8 +4,6 @@
 // (dpapi.ts), tied to the logged-in OS user, and never crosses to the
 // renderer: every endpoint is called from here and only plain JSON
 // results are returned.
-//
-// Ported 1:1 from RiftCompass-Tauri/src-tauri/src/account.rs.
 
 import { app } from "electron";
 import * as fs from "node:fs";

@@ -25,13 +25,11 @@ export function parseRiotId(input: string): { gameName: string; tagLine: string 
 export interface FetchProfileError {
   error: string;
   // The web route's real HTTP status (404/429/502/…), not just its error
-  // code — every call site here used to collapse EVERY non-network failure
-  // into the same "Riot ID not found, check spelling" copy, including a
-  // real 429 from Riot's shared quota. Confirmed live 2026-08-29: with that
-  // quota genuinely saturated (see RiftCompass-Web's own rate-limiting
-  // work earlier this session), that made a real "try again in a bit"
-  // condition read as "you typed the wrong name" — status lets each call
-  // site tell the two apart (see errorMessageKey below).
+  // code — without it every non-network failure collapses into the same
+  // "Riot ID not found, check spelling" copy, including a real 429 from
+  // Riot's shared quota, which turns "try again in a bit" into "you typed
+  // the wrong name". Status lets each call site tell the two apart (see
+  // errorMessageKey below).
   status?: number;
   // Only set on the force-refresh cooldown response (rateLimited from
   // /api/v1/profile's own checkRateLimit, not a real Riot 429) — the one
@@ -49,9 +47,9 @@ export async function fetchProfile(
   const query = options.force ? "?force=true" : "";
   try {
     // A saturated Riot API quota can leave riftcompass.com's own function
-    // hanging on an upstream retry instead of returning a real 429 quickly
-    // (reproduced live 2026-09-01) — without a client-side cutoff that
-    // read as an infinite "Cargando…" with nothing to act on. 15s is
+    // hanging on an upstream retry instead of returning a real 429 quickly.
+    // Without a client-side cutoff that reads as an infinite loading state
+    // with nothing to act on. 15s is
     // generous for a normal response but still short enough that a real
     // hang surfaces as a "network" error with a retry button, not a stuck
     // spinner.
@@ -301,10 +299,9 @@ export const selectStyle: React.CSSProperties = {
 
 // Custom dropdown matching this app's own control aesthetic, instead of a
 // native <select> — a real OS-rendered dropdown always looks and behaves
-// differently from the rest of this app's custom-styled controls. Was
-// built once for the compare view only (2026-09-01); promoted here so
-// every platform picker in the app (profile search, profile detail,
-// compare) uses the same one instead of a native <select> per call site.
+// differently from the rest of this app's custom-styled controls. Shared
+// by every platform picker in the app (profile search, profile detail,
+// compare) instead of a native <select> per call site.
 export function PlatformSelect({ value, onChange }: { value: string; onChange: (platform: string) => void }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -323,8 +320,7 @@ export function PlatformSelect({ value, onChange }: { value: string; onChange: (
           // the chevron itself (not `gap` + marginLeft:auto) — with a
           // content-sized box there's no leftover flex space for an auto
           // margin to redistribute, so `gap` alone was the only thing
-          // separating text and icon and read as tight on both sides
-          // (Julio, 2026-09-01, two rounds of feedback on this control).
+          // separating text and icon and read as tight on both sides.
           // A rose halo while open echoes the same control's own
           // :focus-visible ring so "this is what opened that menu" is
           // never ambiguous.
