@@ -714,6 +714,25 @@ export function OverlayView() {
     }
   }
 
+  // iTero-style auto-apply: as soon as a recommended build is available for
+  // the champion just picked, apply its runes/spells without waiting for a
+  // click. `applyBuildState !== "idle"` is the dedupe guard — it flips to
+  // "working" synchronously inside the handler, so this can't double-fire
+  // for the same pick, and the effect above already resets it back to
+  // "idle" on a genuine champion/cellId change, which re-arms this for the
+  // next pick. The manual button (below) stays as a retry path (LCU race,
+  // page limit) and to re-apply later if the recommendation itself changes
+  // (e.g. a matchup-specific build replacing the blended fallback once the
+  // lane opponent is revealed) — this effect only fires once per pick, not
+  // on every recommendedBuild update.
+  useEffect(() => {
+    if (!overlayModules.autoBuild) return;
+    if (applyBuildState !== "idle") return;
+    if (!recommendedBuild?.runes || !recommendedBuild.spells) return;
+    handleApplyRecommendedBuild();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [overlayModules.autoBuild, recommendedBuild, applyBuildState]);
+
   // Local player's CS/min against the real target for their own rank
   // band — same benchmark table the web profile's roadmap uses
   // (lib/profile-analysis.ts), not a new number.

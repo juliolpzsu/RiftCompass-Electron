@@ -296,7 +296,7 @@ export const en = {
     overlaySkillOrder: "Skill order",
     overlaySkillOrderHint: "Suggests which ability to level up next, from real win rates at your current level.",
     overlayAutoBuild: "Recommended build",
-    overlayAutoBuildHint: "Shows recommended items during champ select, plus a button to apply the recommended runes and summoner spells.",
+    overlayAutoBuildHint: "Automatically applies the recommended runes and summoner spells as soon as you pick a champion, and shows recommended items during champ select.",
     flashSideLabel: "Flash side",
     flashSideHint: "Which slot Flash lands in when a recommended pair includes it.",
     flashSideLeft: "Left",

@@ -284,7 +284,7 @@ export const de: Messages = {
     overlaySkillOrder: "Skill-Reihenfolge",
     overlaySkillOrderHint: "Schlägt vor, welche Fähigkeit als Nächstes hochgestuft werden sollte, basierend auf echten Siegraten auf deiner aktuellen Stufe.",
     overlayAutoBuild: "Empfohlene Build",
-    overlayAutoBuildHint: "Zeigt empfohlene Items während der Champion-Auswahl sowie eine Schaltfläche, um die empfohlenen Runen und Beschwörerzauber anzuwenden.",
+    overlayAutoBuildHint: "Wendet die empfohlenen Runen und Beschwörerzauber automatisch an, sobald du einen Champion auswählst, und zeigt empfohlene Items während der Champion-Auswahl.",
     flashSideLabel: "Flash-Seite",
     flashSideHint: "In welchem Slot Flash landet, wenn ein empfohlenes Paar es enthält.",
     flashSideLeft: "Links",

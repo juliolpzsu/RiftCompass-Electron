@@ -284,7 +284,7 @@ export const es: Messages = {
     overlaySkillOrder: "Orden de habilidades",
     overlaySkillOrderHint: "Sugiere qué habilidad subir según el winrate real en tu nivel actual.",
     overlayAutoBuild: "Build recomendada",
-    overlayAutoBuildHint: "Muestra objetos recomendados en la selección de campeón, más un botón para aplicar las runas y hechizos de invocador recomendados.",
+    overlayAutoBuildHint: "Aplica automáticamente las runas y hechizos de invocador recomendados en cuanto eliges campeón, y muestra los objetos recomendados durante la selección.",
     flashSideLabel: "Lado del Flash",
     flashSideHint: "En qué hueco va el Flash cuando un par recomendado lo incluye.",
     flashSideLeft: "Izquierda",

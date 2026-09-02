@@ -284,7 +284,7 @@ export const fr: Messages = {
     overlaySkillOrder: "Ordre des sorts",
     overlaySkillOrderHint: "Suggère quel sort monter en fonction du taux de victoire réel à votre niveau actuel.",
     overlayAutoBuild: "Build recommandée",
-    overlayAutoBuildHint: "Affiche les objets recommandés en sélection de champion, plus un bouton pour appliquer les runes et sorts d'invocateur recommandés.",
+    overlayAutoBuildHint: "Applique automatiquement les runes et sorts d'invocateur recommandés dès que vous choisissez un champion, et affiche les objets recommandés en sélection de champion.",
     flashSideLabel: "Côté du Flash",
     flashSideHint: "Dans quel emplacement va le Flash quand une paire recommandée l'inclut.",
     flashSideLeft: "Gauche",
