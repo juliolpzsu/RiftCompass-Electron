@@ -42,7 +42,7 @@ El overlay in-game de una ventana normal no puede pintarse sobre League en modo 
 - `npm run dev`: app completa (vite + proceso principal).
 - `npm run typecheck`: dos tsconfig (`tsconfig.json` para `src/`, `tsconfig.electron.json` para `electron/`, CommonJS).
 - `npm run build`, `npm run dist` (instalador NSIS en `release/`), `npm run release` (`electron-builder --publish always`, necesita `GH_TOKEN`).
-- **Acceso directo del escritorio siempre al día**: `RiftCompass.lnk` en el escritorio de Julio apunta a `release/win-unpacked/RiftCompass.exe`, que NO se regenera solo. Tras cualquier cambio en `src/` o `electron/` que se dé por terminado (commit), regenerar ese build con `npm run build && npx electron-builder --dir --win` antes de cerrar la sesión, para que la app que Julio abre desde el escritorio sea siempre la del código actual. Si la app está en ejecución, cerrarla desde el tray (Quit) primero; el exe en uso bloquea la extracción.
+- **Acceso directo del escritorio siempre al día**: `RiftCompass.lnk` en el escritorio de Julio apunta a `release/win-unpacked/RiftCompass.exe`, que NO se regenera solo. Tras cualquier cambio en `src/` o `electron/` que se dé por terminado (commit), regenerar ese build con `npm run pack:dir` antes de cerrar la sesión, para que la app que Julio abre desde el escritorio sea siempre la del código actual. Si la app está en ejecución, cerrarla desde el tray (Quit) primero; el exe en uso bloquea la copia. `pack:dir` existe porque `electron-builder --dir` a secas falla siempre aquí con `EPERM` al renombrar `win-unpacked.tmp` (ver Gotchas).
 - Para probar contra el LCU real: lanzar League con `RiotClientServices.exe --launch-product=league_of_legends --launch-patchline=live` (lanzar `LeagueClient.exe` directo da "Acceso denegado" por Vanguard).
 - Verificar en real, no solo con typecheck: el exe de desarrollo con `npm run dev`, capturas de la ventana con la skill de automatización de escritorio, y `[...document.images].filter(i => i.complete && i.naturalWidth === 0)` en DevTools para detectar iconos rotos.
 
@@ -68,7 +68,7 @@ El overlay in-game de una ventana normal no puede pintarse sobre League en modo 
 - **`assignedPosition`** llega en mayúsculas en personalizadas con selector manual de rol y en minúsculas en colas normales: comparar siempre con `.toLowerCase()`.
 - **Evento final de champ select**: el LCU manda un payload sin `myTeam` real al terminar; exigir `s.myTeam.length` antes de aceptar la actualización o el roster se vacía justo antes de `InProgress`.
 - `npmRebuild: false` en `electron-builder.yml`: `@primno/dpapi` y `koffi` traen binario prebuilt; el rebuild por defecto invoca `node-gyp` y falla.
-- `electron-builder` puede dejar `release\win-unpacked` con un lock transitorio que rompe la extracción con `EPERM`: borrar `release\win-unpacked*` y reintentar.
+- `electron-builder --dir` falla en esta máquina con `EPERM` al renombrar `release\win-unpacked.tmp` → `win-unpacked` (algo, seguramente el antivirus escaneando el `electron.exe` recién extraído, retiene la carpeta en ese instante; borrar y reintentar no lo arregla). `scripts/pack-unpacked.mjs` (`npm run pack:dir`) lo evita descomprimiendo el zip de Electron ya cacheado por `@electron/get` y pasándolo como `electronDist`, con lo que electron-builder copia en vez de extraer y renombrar. El instalador (`npm run dist`) no pasa por ese renombrado y no lo necesita.
 - Errores del proceso principal no se ven en DevTools; van a Sentry o a la consola del terminal de `npm run dev`.
 
 ## Pendiente

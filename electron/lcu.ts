@@ -47,9 +47,8 @@ function basicAuth(creds: LcuCredentials): string {
   return "Basic " + Buffer.from(`riot:${creds.password}`).toString("base64");
 }
 
-// Same contract as the Rust lcu_request: 204/empty -> null; otherwise
-// parse whatever came back, success or error body alike, and let the
-// caller decide.
+// 204/empty -> null; otherwise parse whatever came back, success or error
+// body alike, and let the caller decide.
 export function lcuRequest(creds: LcuCredentials, method: string, urlPath: string, body?: unknown): Promise<unknown> {
   return new Promise((resolve, reject) => {
     const payload = body !== undefined ? JSON.stringify(body) : undefined;

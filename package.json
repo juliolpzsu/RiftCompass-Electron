@@ -14,6 +14,7 @@
     "build": "npm run build:renderer && npm run build:electron",
     "typecheck": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit",
     "dist": "npm run build && electron-builder",
+    "pack:dir": "npm run build && node scripts/pack-unpacked.mjs",
     "release": "npm run build && electron-builder --publish always",
     "preview": "vite preview"
   },
