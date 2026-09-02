@@ -193,7 +193,7 @@ function ProfileSearchForm({ onSearch }: { onSearch: (target: ProfileTarget) => 
             style={{ ...inputStyle, flex: 1 }}
           />
         </div>
-        {error ? <span style={{ fontSize: 12, color: COLORS.rose }}>{error}</span> : null}
+        {error ? <span style={{ fontSize: 12, color: COLORS.destructive }}>{error}</span> : null}
         <button type="submit" style={{ ...primaryButtonStyle, alignSelf: "flex-start" }}>
           <MagnifyingGlass size={14} /> {t("ProfileSearch.searchButton")}
         </button>
@@ -1621,12 +1621,12 @@ function SearchAgainBlock({ defaultPlatform, onOpen }: { defaultPlatform: string
                 setError(false);
               }}
               placeholder={t("ProfileSearch.riotIdPlaceholder")}
-              style={{ ...inputStyle, width: "100%", boxSizing: "border-box", paddingRight: 24, borderColor: error ? COLORS.rose : COLORS.cardBorder }}
+              style={{ ...inputStyle, width: "100%", boxSizing: "border-box", paddingRight: 24, borderColor: error ? COLORS.destructive : COLORS.cardBorder }}
             />
             <CompareSavedProfilePicker profiles={savedProfiles} onPick={onOpen} />
           </div>
         </div>
-        {error ? <span style={{ fontSize: 11, color: COLORS.rose }}>{t("ProfileSearch.invalidRiotId")}</span> : null}
+        {error ? <span style={{ fontSize: 11, color: COLORS.destructive }}>{t("ProfileSearch.invalidRiotId")}</span> : null}
         <button type="submit" style={secondaryButtonStyle}>
           {t("ProfileSearch.searchButton")}
         </button>

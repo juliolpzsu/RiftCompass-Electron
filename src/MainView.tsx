@@ -1443,7 +1443,7 @@ function headerSearchFieldStyle(error: boolean): React.CSSProperties {
     boxSizing: "border-box",
     background: COLORS.card,
     color: COLORS.text,
-    border: `1px solid ${error ? COLORS.rose : COLORS.cardBorder}`,
+    border: `1px solid ${error ? COLORS.destructive : COLORS.cardBorder}`,
     borderRadius: 8,
     padding: "8px 10px",
     fontSize: 13,
@@ -1806,7 +1806,7 @@ function ProfileSection({
             </button>
           </div>
           {status ? (
-            <span style={{ fontSize: 12, color: status.kind === "error" ? COLORS.rose : COLORS.goodMild }}>{status.message}</span>
+            <span style={{ fontSize: 12, color: status.kind === "error" ? COLORS.destructive : COLORS.rose }}>{status.message}</span>
           ) : (
             <span style={{ fontSize: 11, color: COLORS.muted }}>{t("Settings.usernameHint")}</span>
           )}
@@ -1869,7 +1869,7 @@ function LoginForm({ onLoggedIn }: { onLoggedIn: (user: AccountUser) => void }) 
         placeholder={t("Auth.passwordLabel")}
         style={inputStyle}
       />
-      {error ? <span style={{ fontSize: 12, color: COLORS.rose }}>{error}</span> : null}
+      {error ? <span style={{ fontSize: 12, color: COLORS.destructive }}>{error}</span> : null}
       <button type="submit" disabled={busy} style={{ ...smallButtonStyle, alignSelf: "flex-start", opacity: busy ? 0.6 : 1 }}>
         {busy ? t("Auth.loggingIn") : t("Auth.loginButton")}
       </button>

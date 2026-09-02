@@ -9,6 +9,7 @@ import {
   type PersonalityAxis,
   type PersonalityRole,
 } from "../lib/personality-test";
+import { positionIconUrl } from "../lib/profile-analysis";
 import { useI18n } from "../i18n";
 import { COLORS, FONT_HEADING, cardStyle as makeCardStyle } from "../theme";
 import { API_BASE_URL } from "../shared/api";
@@ -30,16 +31,55 @@ const LIKERT_VALUES: Exclude<Answer, null>[] = [2, 1, 0, -1, -2];
 const AXES: PersonalityAxis[] = ["aggression", "resilience", "spellPower", "complexity"];
 const ROLES: PersonalityRole[] = ["TOP", "JUNGLE", "MIDDLE", "BOTTOM", "UTILITY"];
 
+// Same draft-survives-a-remount fix as this app's Map Editor/Gold
+// Calculator/Champion Pool Builder/Tier List Builder — here the remount
+// trigger is MainView's tool-switch key (see its comment), not a locale
+// change, but the effect is identical: leaving this screen and coming
+// back used to reset role/step/answers to empty, losing an in-progress
+// quiz. Same key shape as the web's own personality-test.tsx.
+const QUIZ_DRAFT_KEY = "riftcompass-overlay:personality-test:draft:v1";
+
 export function PersonalityTest() {
   const { t } = useI18n();
   const [champions, setChampions] = useState<ChampionInfo[]>([]);
   const [role, setRole] = useState<PersonalityRole | null>(null);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, Answer>>({});
+  const [restored, setRestored] = useState(false);
 
   useEffect(() => {
     fetchChampionMap().then((m) => setChampions(Object.values(m.byInternalId)));
   }, []);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(QUIZ_DRAFT_KEY);
+      if (raw) {
+        const draft = JSON.parse(raw) as { role?: PersonalityRole; step?: number; answers?: Record<string, Answer> };
+        if (draft.role) {
+          setRole(draft.role);
+          setStep(draft.step ?? 0);
+          setAnswers(draft.answers ?? {});
+        }
+      }
+    } catch {
+      // Corrupt/unavailable storage — start fresh.
+    }
+    setRestored(true);
+  }, []);
+
+  useEffect(() => {
+    if (!restored) return;
+    try {
+      if (role) {
+        localStorage.setItem(QUIZ_DRAFT_KEY, JSON.stringify({ role, step, answers }));
+      } else {
+        localStorage.removeItem(QUIZ_DRAFT_KEY);
+      }
+    } catch {
+      // Ignore write failures.
+    }
+  }, [role, step, answers, restored]);
 
   const total = PERSONALITY_QUESTIONS.length;
   const isResults = role !== null && step >= total;
@@ -70,11 +110,32 @@ export function PersonalityTest() {
         <h2 style={cardTitleStyle}>{t("PersonalityTest.roleStepTitle")}</h2>
         <p style={cardSubtitleStyle}>{t("PersonalityTest.roleStepSubtitle")}</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(140px, 1fr))", gap: 10, marginTop: 18 }}>
-          {ROLES.map((r) => (
-            <button key={r} onClick={() => setRole(r)} style={{ ...optionButtonStyle, padding: "16px 18px", fontSize: 14 }}>
-              {t(`Profile.positions.${r.toLowerCase()}`)}
-            </button>
-          ))}
+          {ROLES.map((r) => {
+            const iconUrl = positionIconUrl(r);
+            return (
+              <button
+                key={r}
+                onClick={() => setRole(r)}
+                style={{ ...optionButtonStyle, display: "flex", alignItems: "center", gap: 10, padding: "16px 18px", fontSize: 14 }}
+              >
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    width: 30,
+                    height: 30,
+                    flexShrink: 0,
+                    borderRadius: 6,
+                    background: `${COLORS.background}99`,
+                  }}
+                >
+                  {iconUrl ? <img src={iconUrl} alt="" style={{ width: 18, height: 18 }} /> : null}
+                </span>
+                {t(`Profile.positions.${r.toLowerCase()}`)}
+              </button>
+            );
+          })}
         </div>
       </div>
     );
