@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { CaretDown, CaretUp } from "@phosphor-icons/react";
 import { ChampionCombobox } from "../ChampionCombobox";
 import {
   fetchChampionDetail,
@@ -132,7 +132,7 @@ function ChampionCooldownPanel({
               aria-label={t("Cooldowns.increaseHaste")}
               style={{ background: "none", border: "none", color: COLORS.muted, cursor: "pointer", padding: 0, display: "flex" }}
             >
-              <ChevronUp size={13} />
+              <CaretUp size={13} />
             </button>
             <button
               type="button"
@@ -140,7 +140,7 @@ function ChampionCooldownPanel({
               aria-label={t("Cooldowns.decreaseHaste")}
               style={{ background: "none", border: "none", color: COLORS.muted, cursor: "pointer", padding: 0, display: "flex" }}
             >
-              <ChevronDown size={13} />
+              <CaretDown size={13} />
             </button>
           </div>
         </div>

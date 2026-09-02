@@ -7,7 +7,12 @@ import * as gameConnection from "./gameConnection";
 import * as settings from "./settings";
 import { createTray } from "./tray";
 import { registerIpcHandlers } from "./ipc";
+import { initTelemetry } from "./telemetry";
+import { startAutoUpdater } from "./updater";
 import { createMainWindow, createOverlayWindow, getOverlayWindow, showMainWindow } from "./windows";
+
+// Before anything else can throw.
+initTelemetry();
 
 // Set as a real response header on every request (not index.html's old
 // <meta> tag) so script-src's 'unsafe-eval' can actually be conditional on
@@ -39,7 +44,10 @@ function applyContentSecurityPolicy(): void {
     "img-src 'self' data: https://ddragon.leagueoflegends.com https://raw.communitydragon.org https://cdn.communitydragon.org https://*.public.blob.vercel-storage.com",
     // localhost:1421 is Vite's own dev server (HMR websocket + module
     // fetches) — only ever reachable in dev, never bundled into what ships.
-    `connect-src 'self' https://ddragon.leagueoflegends.com https://raw.communitydragon.org https://riftcompass.com${
+    // *.sentry.io: renderer-side error reporting (telemetry.ts) — the DSN
+    // host varies by org/region, so this stays a wildcard on the one
+    // vendor domain rather than a single hardcoded ingest subdomain.
+    `connect-src 'self' https://ddragon.leagueoflegends.com https://raw.communitydragon.org https://riftcompass.com https://*.sentry.io${
       isDev ? " ws://localhost:1421 http://localhost:1421" : ""
     }`,
   ].join("; ");
@@ -88,6 +96,7 @@ if (!gotSingleInstanceLock) {
     }
 
     createTray();
+    startAutoUpdater();
     // Auto-launch on by default from the first run (Settings can turn it
     // off; that choice then sticks).
     settings.ensureDefaultAutoLaunch();

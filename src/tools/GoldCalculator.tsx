@@ -2,29 +2,28 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Coins,
   Crosshair,
-  Droplet,
-  Droplets,
+  Drop,
+  DropSimple,
   Footprints,
   Heart,
-  HeartHandshake,
-  HeartPulse,
+  HandHeart,
+  Heartbeat,
   Hourglass,
-  LayoutGrid,
+  SquaresFour,
   Plus,
-  Search,
+  MagnifyingGlass,
   Shield,
-  ShieldOff,
+  ShieldSlash,
   Skull,
-  Sparkles,
+  Sparkle,
   Sword,
-  Swords,
   Target,
-  Wand2,
+  MagicWand,
   Wind,
   X,
-  Zap,
-  type LucideIcon,
-} from "lucide-react";
+  Lightning,
+  type Icon,
+} from "@phosphor-icons/react";
 import { fetchItemCatalog, fetchLatestVersion, itemIconUrl, type ItemCatalog, type ItemSummary } from "../ddragon";
 import { useI18n } from "../i18n";
 import type { AccountUser, SavedBuild } from "../riftcompass";
@@ -52,14 +51,14 @@ function hasAny(tags: string[], names: string[]): boolean {
 // Class tabs backed by goldShopData's curated per-class item lists (the
 // same curation lolshop.gg uses); boots are always visible, like the real
 // shop.
-const CATEGORIES: { id: CategoryId; icon: LucideIcon }[] = [
-  { id: "all", icon: LayoutGrid },
-  { id: "fighter", icon: Swords },
+const CATEGORIES: { id: CategoryId; icon: Icon }[] = [
+  { id: "all", icon: SquaresFour },
+  { id: "fighter", icon: Sword },
   { id: "marksman", icon: Target },
   { id: "assassin", icon: Skull },
-  { id: "mage", icon: Wand2 },
+  { id: "mage", icon: MagicWand },
   { id: "tank", icon: Shield },
-  { id: "support", icon: HeartHandshake },
+  { id: "support", icon: HandHeart },
 ];
 
 function categoryMatch(category: CategoryId, item: ItemSummary): boolean {
@@ -76,29 +75,29 @@ type StatFilterId =
 // The stat sidebar of the in-game shop, driven by Data Dragon's own
 // item.tags. Grouped into the same offensive/magic/defense/utility
 // sections the client uses.
-const STAT_SECTIONS: { id: StatFilterId; icon: LucideIcon; tags: string[] }[][] = [
+const STAT_SECTIONS: { id: StatFilterId; icon: Icon; tags: string[] }[][] = [
   [
     { id: "ad", icon: Sword, tags: ["Damage"] },
     { id: "crit", icon: Crosshair, tags: ["CriticalStrike"] },
     { id: "attackSpeed", icon: Wind, tags: ["AttackSpeed"] },
-    { id: "armorPen", icon: ShieldOff, tags: ["ArmorPenetration"] },
-    { id: "onHit", icon: Zap, tags: ["OnHit"] },
-    { id: "lifeSteal", icon: Droplet, tags: ["LifeSteal"] },
+    { id: "armorPen", icon: ShieldSlash, tags: ["ArmorPenetration"] },
+    { id: "onHit", icon: Lightning, tags: ["OnHit"] },
+    { id: "lifeSteal", icon: Drop, tags: ["LifeSteal"] },
   ],
   [
-    { id: "ap", icon: Sparkles, tags: ["SpellDamage"] },
-    { id: "mana", icon: Droplets, tags: ["Mana", "ManaRegen"] },
-    { id: "magicPen", icon: Wand2, tags: ["MagicPenetration"] },
+    { id: "ap", icon: Sparkle, tags: ["SpellDamage"] },
+    { id: "mana", icon: DropSimple, tags: ["Mana", "ManaRegen"] },
+    { id: "magicPen", icon: MagicWand, tags: ["MagicPenetration"] },
   ],
   [
     { id: "health", icon: Heart, tags: ["Health", "HealthRegen"] },
     { id: "armor", icon: Shield, tags: ["Armor"] },
-    { id: "magicResist", icon: HeartPulse, tags: ["SpellBlock"] },
+    { id: "magicResist", icon: Heartbeat, tags: ["SpellBlock"] },
   ],
   [
     { id: "abilityHaste", icon: Hourglass, tags: ["AbilityHaste", "CooldownReduction"] },
     { id: "moveSpeed", icon: Footprints, tags: ["NonbootsMovement", "Boots"] },
-    { id: "omnivamp", icon: HeartPulse, tags: ["SpellVamp", "Omnivamp"] },
+    { id: "omnivamp", icon: Heartbeat, tags: ["SpellVamp", "Omnivamp"] },
     { id: "goldIncome", icon: Coins, tags: ["GoldPer"] },
   ],
 ];
@@ -321,7 +320,7 @@ export function GoldCalculator() {
       {/* Item grid: search, class tabs, tier-grouped icons with prices */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10, minWidth: 0 }}>
         <div style={{ position: "relative" }}>
-          <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: COLORS.muted }} />
+          <MagnifyingGlass size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: COLORS.muted }} />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -444,7 +443,7 @@ export function GoldCalculator() {
                 cursor: "pointer",
               }}
             >
-              <HeartHandshake size={12} />
+              <HandHeart size={12} />
               {t("GoldCalculator.supportRole")}
             </button>
           </div>

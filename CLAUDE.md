@@ -146,6 +146,29 @@ cero si algo necesita revisarse.
   `RiotClientServices.exe --launch-product=league_of_legends
   --launch-patchline=live` (lanzar `LeagueClient.exe` directamente da
   "Acceso denegado", Vanguard protege su arranque directo).
+- **Bug real, sistémico, encontrado 2026-09-02 (Julio: "el icono de
+  fidlesticks... en la meta tierlist no se ve, puede que esto afecte
+  tambien a otras areas")**: Match-V5/Spectator/el crawler propio
+  escriben el nombre de este campeón como `"FiddleSticks"` (S
+  mayúscula); el id real de Data Dragon (y el nombre del archivo del
+  icono) es `"Fiddlesticks"` (s minúscula) — la misma inconsistencia
+  real de la API de Riot que la web ya documenta y arregla en su propio
+  `ddragon.ts`. Electron nunca portó ese arreglo, y no era un caso
+  aislado: `championSquareUrl` construía la URL del icono directo del
+  nombre crudo (rompía en cualquier sitio que la llamase con un
+  `championName` real, no solo Meta Tier List) y otros 3 sitios
+  comparaban ese nombre crudo contra `ChampionInfo.internalId` con
+  igualdad exacta, sin normalizar: `draft-help.ts` (sugerencias de
+  Draft Simulator), `PersonalityTest.tsx` (badge de winrate real),
+  `TierListBuilder.tsx` (badge de tier real). Arreglado en la raíz:
+  `toDDragonId()` nuevo en `ddragon.ts` (tabla de excepciones, mismo
+  patrón que `CHAMPION_NAME_DDRAGON_OVERRIDES` de la web) aplicado
+  dentro de `championSquareUrl` (cubre `ProfileDetail.tsx` y cualquier
+  otro caller sin tocarlos) y en los 3 sitios de comparación exacta.
+  **Verificado de verdad, no solo a ojo**: con la app en marcha,
+  `[...document.images].filter(img => img.complete && img.naturalWidth
+  === 0)` en la consola de DevTools de la propia app devolvió `[]` —
+  cero imágenes rotas en Meta Tier List tras el arreglo.
 
 ## Estado
 
@@ -170,36 +193,133 @@ tenga la app instalada la reciba sola en segundo plano, sin volver a
 descargar el instalador a mano — eso solo hace falta para una instalación
 nueva en un equipo que nunca tuvo la app.
 
-- [ ] Añadir `electron-updater` como dependencia y llamar a
-      `autoUpdater.checkForUpdatesAndNotify()` (o flujo propio con aviso
-      discreto en vez del diálogo nativo) desde `electron/main.ts` — al
-      arrancar y, al ser app de bandeja, también en un intervalo
-      periódico.
-- [ ] Añadir bloque `publish` (`provider: github`, owner `juliolpzsu`,
-      repo `RiftCompass-Electron`) a `electron-builder.yml`.
-- [ ] Publicar con `electron-builder --publish always` (necesita
-      `GH_TOKEN`) en vez de `npm run dist` suelto — sube el `.exe` a un
-      Release de GitHub y genera el `latest.yml` que `electron-updater`
-      consulta.
-- [ ] Reactivar `DownloadAppButton` en la web apuntando al asset del
-      último Release de GitHub (o espejado a `riftcompass.com` si no se
-      quiere depender de GitHub cara al usuario final).
-- [ ] Decidir y presupuestar **firma de código** (cert OV/EV, ~100-300€/
-      año) antes de cualquier lanzamiento público — sin firmar, el `.exe`
-      dispara el aviso de SmartScreen "Editor desconocido" en el primer
-      arranque y puede dar falso positivo de algún antivirus. No bloquea
-      seguir desarrollando, sí bloquea distribuir a desconocidos con
-      confianza.
-- [ ] Telemetría de errores (p.ej. Sentry, hay SDK de Electron) antes del
-      lanzamiento público — hoy un crash en el equipo de un usuario real
-      no deja ningún rastro consultable.
-- [ ] Compatibilidad hacia atrás de `/api/v1/*` en la web: el
-      auto-update no es instantáneo (puede haber días de versiones
-      viejas y nuevas conviviendo), así que un cambio en esos endpoints
-      tiene que seguir sirviendo a apps ya instaladas o versionarse, no
-      romperlas sin aviso.
-- [ ] EULA/términos de uso en el instalador — no existe ninguno hoy.
+- [x] **`electron-updater` integrado (2026-09-01)**: `electron/updater.ts`
+      (`startAutoUpdater()`, llamado desde `main.ts` junto al resto del
+      arranque) — descarga automática y silenciosa
+      (`autoDownload = true`), se instala sola al cerrar la app
+      (`autoInstallOnAppQuit = true`, sin diálogo que aceptar), comprueba
+      al arrancar y cada 4h mientras la app vive en bandeja. Solo corre
+      en build empaquetada (`app.isPackaged`) — en dev no existe
+      `app-update.yml`, así que no intenta nada.
+- [x] Bloque `publish` (`provider: github`, owner `juliolpzsu`, repo
+      `RiftCompass-Electron`) añadido a `electron-builder.yml`.
+- [x] Script `npm run release` (`electron-builder --publish always`) en
+      `package.json` — necesita `GH_TOKEN` en el entorno para poder subir
+      el asset al Release de GitHub; sube el `.exe` y genera el
+      `latest.yml` que `electron-updater` consulta. **Probado de punta a
+      punta** (ver Release `v0.1.0` abajo). Gotcha real encontrado:
+      `electron-builder` puede dejar una carpeta `release\win-unpacked`
+      con un lock transitorio (Explorer/antivirus) que rompe la
+      extracción del binario de Electron con `EPERM` — si pasa, borrar
+      `release\win-unpacked*` y reintentar.
+- [x] **`DownloadAppButton` reactivado en la web (2026-09-01)**: era un
+      `div` inerte, ahora es un `<a>` real a
+      `github.com/juliolpzsu/RiftCompass-Electron/releases/download/v0.1.0/RiftCompass-Setup-0.1.0.exe`,
+      badge "Coming soon" → "Windows". **Deuda real**: el nombre del
+      asset lleva la versión (`electron-builder` los nombra
+      `RiftCompass-Setup-<version>.exe` por defecto), así que este
+      enlace hay que actualizarlo a mano en cada release. Fijar un
+      `artifactName` sin versión en `electron-builder.yml` (p. ej.
+      `RiftCompass-Setup.exe`) en el próximo release real permitiría
+      pasar a la URL estable
+      `.../releases/latest/download/RiftCompass-Setup.exe` y no volver
+      a tocar la web. No se hizo en este release por no forzar una
+      republicación solo por esto.
+- [x] **Repo hecho público (2026-09-01)**: `RiftCompass-Electron` era
+      privado — un Release ahí no es descargable por nadie anónimo ni
+      sirve para que `electron-updater` compruebe versiones sin exponer
+      un token dentro del propio instalador. Julio confirmó hacerlo
+      público (código sin secretos verificado antes de publicar: sin
+      `.env`, sin tokens, sin firma real embebida — ver commit
+      "Document the distribution and auto-update plan" y el Release
+      `v0.1.0`).
+- [x] **Primer Release real publicado**: `v0.1.0`
+      (github.com/juliolpzsu/RiftCompass-Electron/releases/tag/v0.1.0),
+      con `latest.yml` + `RiftCompass-Setup-0.1.0.exe`, marcado como
+      Latest. Verificado antes de publicar: `app.asar` solo contiene
+      `dist/`, `dist-electron/`, `package.json` y deps de producción
+      (sin código fuente TS ni `.env`), sin secretos embebidos (grep
+      dirigido sin coincidencias), sin firma real (`NotSigned` en los 3
+      `.exe` — pendiente real, ver punto de firma de código arriba).
+- [ ] **Firma de código: pospuesta a propósito (2026-09-01)** — Julio no
+      quiere gastar en el cert OV/EV (~100-300€/año) hasta que la app
+      sea rentable. Sin firmar, el `.exe` dispara el aviso de SmartScreen
+      "Editor desconocido" en el primer arranque y puede dar falso
+      positivo de algún antivirus — asumido mientras tanto. Retomar
+      cuando haya ingresos reales, no antes.
+- [x] **Telemetría de errores — verificada de punta a punta (2026-09-01)**:
+      `@sentry/electron` integrado en los dos procesos —
+      `electron/telemetry.ts` (`initTelemetry()`, llamado al inicio de
+      `main.ts`, antes que cualquier otra cosa pueda lanzar) para
+      crashes/errores del proceso principal (que no se ven en DevTools,
+      ver Gotchas), y `src/telemetry.ts` (llamado al inicio de
+      `main.tsx`) para errores del renderer/React. DSN real en
+      `src/shared/telemetry.ts::SENTRY_DSN` (proyecto Sentry "electron",
+      org `riftcompass`, región UE — ver el `CLAUDE.md` raíz para la
+      lista completa de servicios externos y a qué cuenta va cada uno).
+      CSP (`main.ts`) permite `https://*.sentry.io` en `connect-src`.
+      **Probado con dos errores reales lanzados desde la app en marcha**
+      (`npm run dev`, `setTimeout(() => fnQueNoExiste(), 10)` en la
+      consola del renderer — lanzarlo directo sin `setTimeout` NO vale,
+      un error evaluado directo en la consola de DevTools no pasa por
+      `window.onerror` y Sentry nunca lo ve): ambos llegaron al dashboard
+      de Sentry en segundos, revisados y borrados tras confirmar (eran
+      solo ruido de prueba). El DSN vacío sigue soportado como no-op para
+      cualquier entorno donde no se quiera reportar (confirmado antes de
+      tener el DSN real: build y `npm run dev` arrancaban limpios).
+- [x] **Compatibilidad hacia atrás de `/api/v1/*` documentada
+      (2026-09-01)**: política explícita en `RiftCompass-Web/CLAUDE.md`
+      (sección "API pública v1") — cambios aditivos únicamente, una
+      ruptura real va a `/api/v2/*` en vez de mutar `/v1`. No se añadió
+      cabecera de versión de cliente sin un caso real que la necesite
+      todavía (evitar la plomería especulativa).
+- [x] **EULA en el instalador (2026-09-01)**: `build/eula.txt`
+      (cobertura del producto, no afiliación con Riot, procesamiento
+      local, licencia de uso personal, sin garantía, referencia a
+      `riftcompass.com/legal` para la política de privacidad completa),
+      enganchado vía `nsis.license` en `electron-builder.yml` — NSIS lo
+      muestra antes de elegir carpeta de instalación.
 - [ ] Cuando llegue la aprobación de Overwolf (ver arriba) y se sustituya
       `createOverlayWindow` por la API real, pensar esa build como una
       actualización más vía este mismo mecanismo, no como una
       reinstalación manual pedida a los usuarios.
+
+## De-slopping tras auditoría de diseño (2026-09-02)
+
+Réplica del arreglo del resplandor ambiental de la web (ver
+`RiftCompass-Web/CLAUDE.md`, mismo apartado) — este proyecto ya lo copiaba
+1:1 a propósito (`MainView.tsx`, comentario "Same ambient 'Glass & Depth'
+glow as the web app's body::before"), así que el mismo problema (blob
+morado genérico) y el mismo arreglo (rosa de los vientos vía
+`repeating-conic-gradient`) aplicaban aquí también:
+
+- **Glow principal** (`<main>`, arriba del todo): blob morado → rayos
+  anclados al 90% (no al 80% que usa la web — aquí el glow vive dentro de
+  `<main>`, que no incluye el riel de perfiles guardados, así que no hay
+  nada que esquivar).
+- **Glow secundario** (extensión de la cuadrícula de herramientas, más
+  abajo en la página): morado → rosa. Era un wash de color plano sin
+  forma de rayos (no anclado al mismo punto de origen que el compás
+  principal, así que replicar rayos ahí habría quedado como líneas
+  sueltas sin sentido) — cambiado a rosa para que el morado decorativo
+  puro no se repita en un segundo sitio sin relación con su significado
+  semántico real (color de victoria) ni con el compás.
+- **No tocado**: la cuadrícula de herramientas de `MainView` (es
+  lanzador/navegación como home/`/tools` de la web, no venta — el mismo
+  criterio que se aplicó allí) y las etiquetas en mayúsculas del HUD del
+  overlay (`OverlayView.tsx`), que la propia auditoría marcó como
+  correctas a esa escala.
+- **`lucide-react` → `@phosphor-icons/react` (2026-09-02)**: 12 ficheros
+  (mismo mapeo de nombres verificado que en la web, ver su `CLAUDE.md`
+  para la tabla completa). A diferencia de la web, aquí se importa
+  directo de `@phosphor-icons/react` (sin el sufijo `/dist/ssr`) — esta
+  app es un SPA de Vite puro, sin React Server Components, así que el
+  `IconContext` interno del paquete (el motivo real de tener que usar la
+  ruta `/ssr` en Next.js, ver el gotcha en `RiftCompass-Web/CLAUDE.md`)
+  nunca es un problema aquí.
+- `npm run typecheck` limpio. **No verificado visualmente** — no se pudo
+  screenshotear la app en el momento del cambio (Julio tenía un juego en
+  pantalla completa exclusiva corriendo, que bloquea la composición de
+  cualquier otra ventana, la misma limitación de Windows documentada
+  arriba para el overlay). Pendiente real: confirmar en real la próxima
+  vez que se abra la app.

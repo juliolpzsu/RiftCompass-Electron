@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { fetchChampionMap, type ChampionInfo } from "../ddragon";
+import { fetchChampionMap, toDDragonId, type ChampionInfo } from "../ddragon";
 import {
   PERSONALITY_QUESTIONS,
   championsForRole,
@@ -136,7 +136,7 @@ function Results({
       .catch(() => setWinrates([]));
   }, []);
   const winrateByChampion = useMemo(
-    () => new Map(winrates.filter((w) => w.role === role).map((w) => [w.championName, w])),
+    () => new Map(winrates.filter((w) => w.role === role).map((w) => [toDDragonId(w.championName), w])),
     [winrates, role],
   );
 

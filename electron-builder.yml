@@ -17,3 +17,11 @@ win:
 nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
+  license: build/eula.txt
+# electron-updater reads this at runtime to know where to check for new
+# versions — installs already on a user's machine update themselves from
+# here, no need to redistribute the installer for every release.
+publish:
+  provider: github
+  owner: juliolpzsu
+  repo: RiftCompass-Electron

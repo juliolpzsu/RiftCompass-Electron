@@ -2,15 +2,15 @@ import {
   Brain,
   Coins,
   Crown,
-  Layers,
-  ListOrdered,
-  Map as MapIcon,
-  Swords,
+  Stack,
+  ListNumbers,
+  MapTrifold as MapIcon,
+  Sword,
   Timer,
-  TreePine,
+  Tree,
   Waves,
-  type LucideIcon,
-} from "lucide-react";
+  type Icon,
+} from "@phosphor-icons/react";
 
 // Same tool set and icon choices as riftcompass.com (src/lib/tool-meta.tsx
 // in the main repo) — kept in sync by hand since this is a separate
@@ -33,7 +33,7 @@ export type ToolId =
 
 export interface ToolMeta {
   id: ToolId;
-  icon: LucideIcon;
+  icon: Icon;
   accent: string;
   native: boolean;
 }
@@ -42,15 +42,15 @@ export interface ToolMeta {
 // order in the web repo (src/lib/tool-routes.ts), which is what that
 // site's /tools grid actually iterates over.
 export const TOOLS: ToolMeta[] = [
-  { id: "tierList", icon: ListOrdered, accent: "#ffc857", native: true },
+  { id: "tierList", icon: ListNumbers, accent: "#ffc857", native: true },
   { id: "cooldowns", icon: Timer, accent: "#4d7fe8", native: true },
-  { id: "draft", icon: Swords, accent: "#d6394a", native: true },
+  { id: "draft", icon: Sword, accent: "#d6394a", native: true },
   { id: "map", icon: MapIcon, accent: "#e63977", native: true },
   { id: "goldCalculator", icon: Coins, accent: "#e0873f", native: true },
   { id: "waveTimer", icon: Waves, accent: "#2bb8ad", native: true },
   { id: "personalityTest", icon: Brain, accent: "#7839ac", native: true },
-  { id: "jungleXp", icon: TreePine, accent: "#2f9d68", native: true },
-  { id: "championPool", icon: Layers, accent: "#6366d4", native: true },
+  { id: "jungleXp", icon: Tree, accent: "#2f9d68", native: true },
+  { id: "championPool", icon: Stack, accent: "#6366d4", native: true },
   { id: "metaTierList", icon: Crown, accent: "#9aa5b1", native: true },
 ];
 

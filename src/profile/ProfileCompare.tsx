@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ChevronRight, RotateCcw, Route, ShieldAlert, Swords, X, type LucideIcon } from "lucide-react";
+import { CaretRight, ArrowCounterClockwise, Path, ShieldWarning, Sword, X, type Icon } from "@phosphor-icons/react";
 import { ChampionSplashAccent } from "../ChampionSplashAccent";
 import { COLORS, FONT_HEADING, inputStyle } from "../theme";
 import { useI18n } from "../i18n";
@@ -48,10 +48,10 @@ const MAX_COMPARE_PLAYERS = 5;
 // surfaced here as a preview so the empty-state screen pitches the tool
 // instead of a lone form on an otherwise blank page. Same pattern as the
 // web app's /duo page — see RiftCompass-Web's duo/page.tsx.
-const COMPARE_PREVIEW_ITEMS: { key: string; Icon: LucideIcon }[] = [
-  { key: "comparePreviewHeadToHead", Icon: Swords },
-  { key: "comparePreviewWeaknesses", Icon: ShieldAlert },
-  { key: "comparePreviewRoadmap", Icon: Route },
+const COMPARE_PREVIEW_ITEMS: { key: string; Icon: Icon }[] = [
+  { key: "comparePreviewHeadToHead", Icon: Sword },
+  { key: "comparePreviewWeaknesses", Icon: ShieldWarning },
+  { key: "comparePreviewRoadmap", Icon: Path },
 ];
 
 interface CompareSlotDraft {
@@ -398,7 +398,7 @@ function RetryCountdownButton({ seconds, onRetry }: { seconds: number; onRetry: 
         opacity: ready ? 1 : 0.6,
       }}
     >
-      <RotateCcw size={13} />
+      <ArrowCounterClockwise size={13} />
       {ready ? t("ProfileSearch.retryNow") : t("ProfileSearch.retryIn", { seconds: remaining })}
     </button>
   );
@@ -709,7 +709,7 @@ function RoadmapMetricRow({
           needs no state here. */}
       <details>
         <summary style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: COLORS.muted, cursor: "pointer", listStyle: "none" }}>
-          <ChevronRight size={12} />
+          <CaretRight size={12} />
           {t("ProfileSearch.roadmapTips")}
         </summary>
         <ul style={{ display: "flex", flexDirection: "column", gap: 6, margin: "8px 0 0", padding: "0 0 0 16px" }}>

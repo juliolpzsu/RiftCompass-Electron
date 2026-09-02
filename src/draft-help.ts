@@ -1,4 +1,4 @@
-import type { ChampionInfo } from "./ddragon";
+import { toDDragonId, type ChampionInfo } from "./ddragon";
 import { rolesOf, type ChampionRole } from "./lib/champion-roles";
 
 // Candidate champions per position come from champion-roles.ts's real,
@@ -18,8 +18,9 @@ const POSITION_TO_ROLE: Record<string, ChampionRole> = {
 const ALL_CHAMPION_CLASSES = ["Assassin", "Fighter", "Mage", "Marksman", "Support", "Tank"];
 
 // Same shape /api/v1/champion-winrates returns (ChampionWinrate in the
-// web's champion-stats.ts) — championName is Data Dragon's internal id
-// (matches ChampionInfo.internalId), not the numeric id.
+// web's champion-stats.ts) — championName is a raw match/crawler name, not
+// always identical to Data Dragon's internal id (see toDDragonId in
+// ddragon.ts), so never compare it to ChampionInfo.internalId directly.
 export interface ChampionWinrateEntry {
   championName: string;
   role: string;
@@ -66,7 +67,7 @@ export function suggestPicks(
   const available = candidates.filter((c) => !pickedIds.has(c.id));
 
   const winrateByInternalId = new Map(
-    winrates.filter((w) => w.role === role).map((w) => [w.championName, w]),
+    winrates.filter((w) => w.role === role).map((w) => [toDDragonId(w.championName), w]),
   );
 
   const suggestions: DraftSuggestion[] = [];

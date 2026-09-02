@@ -2,7 +2,10 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { installBridge } from "./bridge";
 import { App } from "./App";
+import { initTelemetry } from "./telemetry";
 import "./global.css";
+
+initTelemetry();
 
 // window.riftcompass must exist before any component mounts —
 // I18nProvider reads settings in its first effect.

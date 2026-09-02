@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { fetchChampionMap, type ChampionInfo } from "../ddragon";
+import { fetchChampionMap, toDDragonId, type ChampionInfo } from "../ddragon";
 import { POOL_ROLES } from "../lib/champion-pool-builder";
 import { type PersonalityRole } from "../lib/personality-test";
 import { positionIconUrl } from "../lib/profile-analysis";
@@ -154,7 +154,7 @@ export function MetaTierList() {
                           </div>
                           <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
                             {inTier.map((entry) => {
-                              const champ = championByInternalId.get(entry.championName);
+                              const champ = championByInternalId.get(toDDragonId(entry.championName));
                               const tooltip = t("MetaTierList.chipTooltip", { rate: Math.round(entry.winRate * 100), games: entry.games });
                               return (
                                 <div

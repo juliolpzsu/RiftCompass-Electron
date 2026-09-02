@@ -33,8 +33,16 @@ export function ChampionSplashAccent({
         // Opaque core widened from 35%: a face sitting anywhere past it
         // was landing in the fade-to-transparent band and reading as
         // smudged rather than just softly vignetted.
-        maskImage: "radial-gradient(ellipse 55% 55% at 50% 50%, black 48%, transparent 100%)",
-        WebkitMaskImage: "radial-gradient(ellipse 55% 55% at 50% 50%, black 48%, transparent 100%)",
+        // 5 stops, not 2 (same fix as the web app's version, 2026-09-02):
+        // a straight `black 48%, transparent 100%` ramp drops alpha at a
+        // constant rate, and the eye's own edge enhancement turns the
+        // point where that ramp ends into a visible ring against the
+        // page background — an eased curve (fast drop, then a long soft
+        // tail to true zero) avoids it.
+        maskImage:
+          "radial-gradient(ellipse 55% 55% at 50% 50%, black 48%, rgba(0,0,0,0.7) 62%, rgba(0,0,0,0.35) 78%, rgba(0,0,0,0.1) 90%, transparent 100%)",
+        WebkitMaskImage:
+          "radial-gradient(ellipse 55% 55% at 50% 50%, black 48%, rgba(0,0,0,0.7) 62%, rgba(0,0,0,0.35) 78%, rgba(0,0,0,0.1) 90%, transparent 100%)",
         opacity: opacity / 100,
         maxWidth: "none",
         maxHeight: "none",

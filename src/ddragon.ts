@@ -101,8 +101,28 @@ export async function fetchLatestVersion(): Promise<string> {
   return versions[0];
 }
 
+// Same real-world Riot API inconsistency the main web app's ddragon.ts
+// documents and fixes (see its CHAMPION_NAME_DDRAGON_OVERRIDES): Match-V5,
+// Spectator, and this app's own crawler-backed /api/v1/champion-winrates
+// all spell this champion's name "FiddleSticks" (capital S); Data Dragon's
+// own champion id — and its actual asset filename — is "Fiddlesticks"
+// (lowercase s). Anything built from real match/crawler data (not from
+// Data Dragon's own champion list already) needs this, or the lookup/image
+// silently misses: confirmed live as a blank icon box in Meta Tier List's
+// Jungle D tier, a missing real-winrate badge in Personality Test and
+// Draft Simulator's suggestions, a missing real-tier badge in Tier List
+// Builder, and a broken champion-square image in match history/champion
+// overview (anywhere championSquareUrl is fed a raw match championName).
+const DDRAGON_ID_OVERRIDES: Record<string, string> = {
+  FiddleSticks: "Fiddlesticks",
+};
+
+export function toDDragonId(name: string): string {
+  return DDRAGON_ID_OVERRIDES[name] ?? name;
+}
+
 export function championSquareUrl(version: string, championInternalId: string): string {
-  return `https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${championInternalId}.png`;
+  return `https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${toDDragonId(championInternalId)}.png`;
 }
 
 export function profileIconUrl(version: string, iconId: number): string {

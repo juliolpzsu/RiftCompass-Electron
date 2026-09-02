@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ChevronDown, ChevronUp, X } from "lucide-react";
+import { CaretDown, CaretUp, X } from "@phosphor-icons/react";
 import { ChampionCombobox } from "../ChampionCombobox";
 import { fetchChampionMap, type ChampionInfo } from "../ddragon";
 import {
@@ -189,10 +189,10 @@ export function ChampionPoolBuilder() {
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
                         <IconButton onClick={() => handleMove(index, -1)} disabled={index === 0}>
-                          <ChevronUp size={15} />
+                          <CaretUp size={15} />
                         </IconButton>
                         <IconButton onClick={() => handleMove(index, 1)} disabled={index === currentPool.length - 1}>
-                          <ChevronDown size={15} />
+                          <CaretDown size={15} />
                         </IconButton>
                         <IconButton onClick={() => handleRemove(champion.internalId)}>
                           <X size={15} />

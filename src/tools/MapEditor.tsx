@@ -4,13 +4,13 @@ import {
   Circle,
   Eraser,
   Minus,
-  MousePointer2,
-  Pencil,
+  Cursor,
+  PencilSimple,
   Plus,
-  Type as TypeIcon,
-  UserRound,
+  TextT as TypeIcon,
+  User,
   X,
-} from "lucide-react";
+} from "@phosphor-icons/react";
 import { ChampionCombobox } from "../ChampionCombobox";
 import { championSquareUrl, fetchChampionMap, fetchLatestVersion, type ChampionInfo } from "../ddragon";
 import { useI18n } from "../i18n";
@@ -1511,11 +1511,11 @@ function ToolIcon({ tool, selectedChampion }: { tool: Tool; selectedChampion: Ch
     if (selectedChampion) {
       return <img src={selectedChampion.iconUrl} alt="" style={{ width: 14, height: 14, borderRadius: 3 }} />;
     }
-    return <UserRound size={14} />;
+    return <User size={14} />;
   }
   const icons: Record<Exclude<Tool, "ward-normal" | "ward-control" | "minion" | "champion">, React.ReactNode> = {
-    select: <MousePointer2 size={14} />,
-    pen: <Pencil size={14} />,
+    select: <Cursor size={14} />,
+    pen: <PencilSimple size={14} />,
     arrow: <ArrowRight size={14} />,
     zone: <Circle size={14} />,
     text: <TypeIcon size={14} />,

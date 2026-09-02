@@ -16,8 +16,8 @@ import {
 import { SortableContext, rectSortingStrategy, useSortable, arrayMove } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { snapCenterToCursor } from "@dnd-kit/modifiers";
-import { Bookmark, Search } from "lucide-react";
-import { fetchChampionMap, type ChampionInfo } from "../ddragon";
+import { Bookmark, MagnifyingGlass } from "@phosphor-icons/react";
+import { fetchChampionMap, toDDragonId, type ChampionInfo } from "../ddragon";
 import { TIERS, TIER_COLORS, type Tier } from "../lib/tier-colors";
 import { ALL_ROLES, rolesOf, primaryRoleOf, type ChampionRole } from "../lib/champion-roles";
 import { positionIconUrl } from "../lib/profile-analysis";
@@ -152,7 +152,7 @@ export function TierListBuilder() {
     for (const champ of champions) {
       const role = primaryRoleOf(champ.internalId);
       if (!role) continue;
-      const entry = tieredByRole[role]?.find((e) => e.championName === champ.internalId);
+      const entry = tieredByRole[role]?.find((e) => toDDragonId(e.championName) === champ.internalId);
       if (entry) map.set(champ.internalId, entry.tier);
     }
     return map;
@@ -439,7 +439,7 @@ export function TierListBuilder() {
                 })}
               </div>
               <div style={{ position: "relative", width: 160 }}>
-                <Search size={13} color={COLORS.muted} style={{ position: "absolute", left: 6, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+                <MagnifyingGlass size={13} color={COLORS.muted} style={{ position: "absolute", left: 6, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}

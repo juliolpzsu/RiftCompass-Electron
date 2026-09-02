@@ -1,22 +1,22 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
-  ArrowUpDown,
+  ArrowsDownUp,
   Check,
-  ChevronDown,
-  ChevronRight,
-  ExternalLink,
-  Filter,
+  CaretDown,
+  CaretRight,
+  ArrowSquareOut,
+  Funnel,
   Folder,
   FolderPlus,
-  GitCompare,
-  Pencil,
-  Search,
-  Settings as SettingsIcon,
-  Trash2,
-  UserRound,
-  type LucideIcon,
-} from "lucide-react";
+  ArrowsLeftRight,
+  PencilSimple,
+  MagnifyingGlass,
+  Gear as SettingsIcon,
+  TrashSimple,
+  User,
+  type Icon,
+} from "@phosphor-icons/react";
 import { API_BASE_URL } from "./shared/api";
 import { ProfileScreen } from "./profile/ProfileDetail";
 import { ProfileCompareEntry } from "./profile/ProfileCompare";
@@ -238,21 +238,13 @@ export function MainView() {
       </div>
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <main style={{ position: "relative", zIndex: 0, flex: 1, minWidth: 0, overflowY: "auto", overflowX: "hidden", padding: "20px clamp(16px, 3vw, 48px)" }}>
-          {/* Same ambient "Glass & Depth" glow as the web app's body::before —
-              fixed to the scroll container so it stays put while content
-              scrolls, filling otherwise-flat empty space with real color
-              instead of leaving it plain black. */}
-          <div
-            aria-hidden
-            style={{
-              position: "absolute",
-              inset: 0,
-              zIndex: -1,
-              pointerEvents: "none",
-              background:
-                "radial-gradient(750px circle at 12% -10%, rgba(230,57,119,0.30), transparent 65%), radial-gradient(650px circle at 92% 15%, rgba(120,57,172,0.24), transparent 65%)",
-            }}
-          />
+          {/* Ambient glow removed 2026-09-02 (see riftcompass.com's
+              CLAUDE.md, "De-slopping" section, for the full history: two
+              blurred circles, then compass-rose rays, both still read as
+              the generic AI-hero glow underneath whatever color/shape wore
+              it). Real per-tool splash art (TOOL_SPLASH_CHAMPION) and
+              profile screens' real top-mastery champion carry the depth
+              job instead — no synthetic shape here, on purpose. */}
           {/* key changes on every real view switch (not on data reloading
               within the same view), so React remounts this div and its
               rc-view-enter animation replays — see global.css for why. */}
@@ -415,7 +407,7 @@ export function MainView() {
                   justifyContent: "center",
                 }}
               >
-                <UserRound size={14} />
+                <User size={14} />
               </div>
               <span style={{ fontSize: 13, fontWeight: 500 }}>{t("Auth.loginButton")}</span>
             </button>
@@ -430,7 +422,7 @@ export function MainView() {
               below it, nothing else. */}
           {user ? (
             <div style={{ position: "relative", margin: "0 2px" }}>
-              <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: COLORS.muted, pointerEvents: "none" }} />
+              <MagnifyingGlass size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: COLORS.muted, pointerEvents: "none" }} />
               <input
                 value={profileFilter}
                 onChange={(e) => setProfileFilter(e.target.value)}
@@ -679,7 +671,7 @@ function SavedProfilesPanel({ onOpenProfile, textFilter }: { onOpenProfile: (tar
         {t("SavedProfiles.title")}
       </span>
       <div style={{ display: "flex", gap: 4 }}>
-        <IconPopoverButton icon={Filter} label={t("SavedProfiles.filterLabel")} active={groupFilter !== "all"}>
+        <IconPopoverButton icon={Funnel} label={t("SavedProfiles.filterLabel")} active={groupFilter !== "all"}>
           {(close) => (
             <>
               <PopoverOption
@@ -711,7 +703,7 @@ function SavedProfilesPanel({ onOpenProfile, textFilter }: { onOpenProfile: (tar
             </>
           )}
         </IconPopoverButton>
-        <IconPopoverButton icon={ArrowUpDown} label={t("SavedProfiles.sortLabel")}>
+        <IconPopoverButton icon={ArrowsDownUp} label={t("SavedProfiles.sortLabel")}>
           {(close) => (
             <>
               <PopoverOption
@@ -744,7 +736,7 @@ function SavedProfilesPanel({ onOpenProfile, textFilter }: { onOpenProfile: (tar
       <>
         {header}
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 10, padding: "24px 20px" }}>
-          <Search size={28} color={COLORS.muted} style={{ opacity: 0.7 }} />
+          <MagnifyingGlass size={28} color={COLORS.muted} style={{ opacity: 0.7 }} />
           <p style={{ fontSize: TYPE.body, fontWeight: 600, color: COLORS.text, margin: 0 }}>{t("SavedProfiles.noSavedProfiles")}</p>
           <p style={{ fontSize: TYPE.label, color: COLORS.muted, margin: 0, lineHeight: 1.5 }}>{t("SavedProfiles.noSavedProfilesHint")}</p>
         </div>
@@ -870,7 +862,7 @@ function FolderSection({
         onClick={onToggle}
         style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", padding: 0, cursor: "pointer", color: COLORS.text, fontFamily: "inherit" }}
       >
-        {collapsed ? <ChevronRight size={12} color={COLORS.muted} /> : <ChevronDown size={12} color={COLORS.muted} />}
+        {collapsed ? <CaretRight size={12} color={COLORS.muted} /> : <CaretDown size={12} color={COLORS.muted} />}
         <Folder size={12} color={COLORS.muted} />
         <span style={{ fontSize: 12, fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</span>
         <span style={{ fontSize: 11, color: COLORS.muted, flexShrink: 0 }}>({count})</span>
@@ -977,11 +969,11 @@ function FolderEditControls({
         title={t("SavedProfiles.renameFolderHint")}
         style={iconMiniButtonStyle}
       >
-        <Pencil size={11} />
+        <PencilSimple size={11} />
       </button>
       {isGeneral ? null : (
         <button onClick={() => onDelete(group.id)} title={t("SavedProfiles.deleteFolderHint")} style={iconMiniButtonStyle}>
-          <Trash2 size={11} />
+          <TrashSimple size={11} />
         </button>
       )}
     </span>
@@ -1012,7 +1004,7 @@ function IconPopoverButton({
   active,
   children,
 }: {
-  icon: LucideIcon;
+  icon: Icon;
   label: string;
   active?: boolean;
   children: (close: () => void) => React.ReactNode;
@@ -1330,28 +1322,9 @@ function ToolsIndex({
           gap: "clamp(12px, 1vw, 20px)",
         }}
       >
-        {/* The main ambient glow (see <main> above) is sized to the scroll
-            viewport, so on a tall grid like this one it fades out well
-            before reaching the lower rows — same issue the web app hit on
-            its own home page (see CLAUDE.md, "Ambient glow... no llegaba
-            más allá de la primera pantalla") and fixed the same way: a
-            second blob scoped to this section so it scrolls/sits with it. */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            left: "8%",
-            bottom: -40,
-            width: 600,
-            height: 400,
-            zIndex: -1,
-            pointerEvents: "none",
-            background: "radial-gradient(ellipse, rgba(120,57,172,0.20), transparent 70%)",
-          }}
-        />
         {entries.map((entry) => {
           if (entry.kind === "compareProfiles") {
-            return <GridCard key="compareProfiles" icon={GitCompare} accent={COMPARE_PROFILES_ACCENT} label={t("ToolsIndex.compareProfiles")} onClick={onOpenCompare} />;
+            return <GridCard key="compareProfiles" icon={ArrowsLeftRight} accent={COMPARE_PROFILES_ACCENT} label={t("ToolsIndex.compareProfiles")} onClick={onOpenCompare} />;
           }
           const tool = entry.tool;
           return (
@@ -1395,7 +1368,7 @@ function HeaderProfileSearch({ onSearch }: { onSearch: (target: ProfileTarget) =
       <div style={{ display: "flex", gap: 6 }}>
         <PlatformSelect value={platform} onChange={setPlatform} />
         <div style={{ position: "relative" }}>
-          <Search size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: COLORS.muted, pointerEvents: "none" }} />
+          <MagnifyingGlass size={13} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", color: COLORS.muted, pointerEvents: "none" }} />
           <input
             value={riotId}
             onChange={(e) => {
@@ -1482,7 +1455,7 @@ function GridCard({
   onClick,
   disabled,
 }: {
-  icon: LucideIcon;
+  icon: Icon;
   accent: string;
   label: string;
   onClick: () => void;
@@ -1792,7 +1765,7 @@ function ProfileSection({
         onClick={() => window.riftcompass.openExternal(`${API_BASE_URL}/account`)}
         style={{ display: "flex", alignItems: "center", gap: 6, alignSelf: "flex-start", background: "none", border: "none", color: COLORS.rose, fontSize: 12, cursor: "pointer", padding: 0 }}
       >
-        {t("Settings.manageOnWeb")} <ExternalLink size={12} />
+        {t("Settings.manageOnWeb")} <ArrowSquareOut size={12} />
       </button>
     </>
   );

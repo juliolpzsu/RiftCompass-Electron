@@ -1,0 +1,58 @@
+RiftCompass Desktop - End User License Agreement
+
+By installing RiftCompass, you agree to the following terms.
+
+1. What this app does
+
+RiftCompass is a companion app for League of Legends: champ-select
+scouting and an optional in-game overlay, reading data from the League
+client running on your own computer. It uses the same account system as
+riftcompass.com.
+
+2. Not affiliated with Riot Games
+
+RiftCompass isn't endorsed by Riot Games and doesn't reflect the views or
+opinions of Riot Games or anyone officially involved in producing or
+managing League of Legends. League of Legends and Riot Games are
+trademarks or registered trademarks of Riot Games, Inc. Champion and
+match data comes from Riot Games' public developer tools and the League
+client running locally on your machine, used in accordance with Riot's
+developer terms and fan content policy.
+
+3. Local processing
+
+Data read from the League client (champ select, live match state) is
+processed only on your own computer to power the app's features. It is
+never uploaded to any server. If you sign in with a RiftCompass account,
+only the data you explicitly save (profiles, drafts, maps, tier lists,
+builds) is sent to riftcompass.com, the same backend and account system
+used by the website.
+
+4. License and use
+
+You're granted a personal, non-exclusive, non-transferable license to
+install and run RiftCompass for your own use. You may not redistribute,
+sell, reverse-engineer for the purpose of building a competing product,
+or use the app to violate Riot Games' Terms of Service or Third-Party
+Application Policy. You can uninstall the app at any time from Windows
+Settings or the uninstaller in its install folder.
+
+5. No warranty, limited liability
+
+RiftCompass is provided "as is", without warranty of any kind. Riot's
+own client and API are outside our control, so we don't guarantee
+uninterrupted or error-free operation. To the maximum extent permitted
+by law, the developer isn't liable for any indirect or consequential
+damages arising from use of the app.
+
+6. Privacy and full legal terms
+
+The full Legal Notice, Privacy Policy and Cookie Policy that govern your
+RiftCompass account and riftcompass.com apply equally here and are
+available at https://riftcompass.com/legal. This EULA covers the desktop
+app specifically; those pages remain the source of truth for data
+protection and account terms.
+
+7. Contact
+
+Questions about this agreement: riftcompass@gmail.com.

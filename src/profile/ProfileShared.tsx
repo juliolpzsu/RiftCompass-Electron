@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, CaretDown } from "@phosphor-icons/react";
 import { API_BASE_URL } from "../shared/api";
 import { COLORS, TYPE, cardStyle as makeCardStyle, inputStyle } from "../theme";
 import { useI18n } from "../i18n";
@@ -267,7 +267,7 @@ export function CompareSavedProfilePicker({
           cursor: "pointer",
         }}
       >
-        <ChevronDown size={14} />
+        <CaretDown size={14} />
       </button>
       <DropdownMenu triggerRef={triggerRef} open={open} onClose={() => setOpen(false)} align="right" minWidth={220}>
         {profiles.map((p) => (
@@ -346,7 +346,7 @@ export function PlatformSelect({ value, onChange }: { value: string; onChange: (
         }}
       >
         {PLATFORM_LABELS[value] ?? value}
-        <ChevronDown
+        <CaretDown
           size={13}
           color={open ? COLORS.rose : COLORS.muted}
           style={{

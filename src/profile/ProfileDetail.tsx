@@ -1,23 +1,22 @@
 import { useEffect, useId, useRef, useState } from "react";
 import {
   Bookmark,
-  BookmarkCheck,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  CircleAlert,
+  CaretDown,
+  CaretLeft,
+  CaretRight,
+  WarningCircle,
   Crosshair,
   Eye,
-  Flame,
-  GitCompare,
-  RefreshCw,
-  Search,
-  Sparkles,
-  Swords,
+  Fire,
+  ArrowsLeftRight,
+  ArrowsClockwise,
+  MagnifyingGlass,
+  Sparkle,
+  Sword,
   Target,
-  Wheat,
-  type LucideIcon,
-} from "lucide-react";
+  Grains,
+  type Icon,
+} from "@phosphor-icons/react";
 import { API_BASE_URL } from "../shared/api";
 import { COLORS, FONT_HEADING, TYPE, inputStyle } from "../theme";
 import { useI18n } from "../i18n";
@@ -196,7 +195,7 @@ function ProfileSearchForm({ onSearch }: { onSearch: (target: ProfileTarget) => 
         </div>
         {error ? <span style={{ fontSize: 12, color: COLORS.rose }}>{error}</span> : null}
         <button type="submit" style={{ ...primaryButtonStyle, alignSelf: "flex-start" }}>
-          <Search size={14} /> {t("ProfileSearch.searchButton")}
+          <MagnifyingGlass size={14} /> {t("ProfileSearch.searchButton")}
         </button>
       </form>
       <SavedProfileSelect profiles={savedProfiles} onPick={onSearch} />
@@ -267,7 +266,7 @@ function RefreshProfileButton({
         {minutesAgo <= 0 ? t("ProfileSearch.lastUpdatedNow") : t("ProfileSearch.lastUpdatedMinutes", { minutes: minutesAgo })}
       </span>
       <button onClick={handleClick} disabled={loading || onCooldown} style={{ ...secondaryButtonStyle, opacity: loading || onCooldown ? 0.6 : 1 }}>
-        <RefreshCw size={13} />
+        <ArrowsClockwise size={13} />
         {onCooldown && status.kind === "cooldown"
           ? t("ProfileSearch.refreshCooldown", { time: `${Math.floor(status.seconds / 60)}:${String(status.seconds % 60).padStart(2, "0")}` })
           : loading
@@ -361,7 +360,7 @@ function ProfileDetail({
       <div style={{ maxWidth: 480, margin: "40px auto 0", display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-start" }}>
         <div style={{ ...cardStyle, display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-start", width: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <CircleAlert size={18} color={COLORS.rose} />
+            <WarningCircle size={18} color={COLORS.rose} />
             <p style={{ fontFamily: FONT_HEADING, fontSize: TYPE.subheading, fontWeight: 400, margin: 0, color: COLORS.text }}>
               {t("ProfileSearch.errorTitle")}
             </p>
@@ -443,7 +442,7 @@ function ProfileDetail({
                   : secondaryButtonStyle
               }
             >
-              {saved ? <BookmarkCheck size={13} /> : <Bookmark size={13} />}
+              <Bookmark size={13} weight={saved ? "fill" : "regular"} />
               {saved ? t("ProfileSearch.savedProfile") : t("ProfileSearch.saveProfile")}
             </button>
           ) : null}
@@ -452,14 +451,14 @@ function ProfileDetail({
             onClick={() => setCompareTarget(compareTarget ? null : { platform: target.platform, gameName: "", tagLine: "" })}
             style={secondaryButtonStyle}
           >
-            <GitCompare size={13} /> {t("ProfileSearch.compare")}
+            <ArrowsLeftRight size={13} /> {t("ProfileSearch.compare")}
           </button>
           <button
             ref={searchAgainButtonRef}
             onClick={() => setSearchAgainOpen((v) => !v)}
             style={secondaryButtonStyle}
           >
-            <Search size={13} /> {t("ProfileSearch.searchAgain")}
+            <MagnifyingGlass size={13} /> {t("ProfileSearch.searchAgain")}
           </button>
         </div>
       </div>
@@ -577,16 +576,16 @@ function ProfileDetail({
 // per skill-radar axis that clears a strength/focus threshold, same
 // benchmark-derived data already feeding SkillRadarCard — never a separate
 // computation.
-const AXIS_ICON: Record<SkillAxis, LucideIcon> = {
-  farm: Wheat,
+const AXIS_ICON: Record<SkillAxis, Icon> = {
+  farm: Grains,
   vision: Eye,
   kda: Crosshair,
-  killParticipation: Swords,
-  damage: Flame,
+  killParticipation: Sword,
+  damage: Fire,
 };
 
-function badgeIcon(badge: PerformanceBadge): LucideIcon {
-  if (badge.key === "wellRounded") return Sparkles;
+function badgeIcon(badge: PerformanceBadge): Icon {
+  if (badge.key === "wellRounded") return Sparkle;
   if (badge.key === "focus") return Target;
   return AXIS_ICON[badge.axis as SkillAxis];
 }
@@ -944,7 +943,7 @@ function ActivityCalendarCard({ matches, puuid, platform }: { matches: RecentMat
             aria-label={t("ProfileSearch.previousMonth")}
             style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 22, height: 22, border: "none", background: "none", color: COLORS.muted, cursor: "pointer", borderRadius: 4 }}
           >
-            <ChevronLeft size={14} />
+            <CaretLeft size={14} />
           </button>
           <button
             onClick={() => !isCurrentMonth && goToMonth(1)}
@@ -963,7 +962,7 @@ function ActivityCalendarCard({ matches, puuid, platform }: { matches: RecentMat
               borderRadius: 4,
             }}
           >
-            <ChevronRight size={14} />
+            <CaretRight size={14} />
           </button>
         </div>
       </div>
@@ -1318,7 +1317,7 @@ function MatchHistoryCard({
                     transition: "transform 200ms, border-color 200ms, background 200ms, color 200ms",
                   }}
                 >
-                  <ChevronDown size={14} />
+                  <CaretDown size={14} />
                 </span>
               </button>
               {isOpen ? (

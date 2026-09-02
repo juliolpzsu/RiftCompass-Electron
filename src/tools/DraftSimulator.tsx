@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bookmark, X } from "lucide-react";
+import { Bookmark, X } from "@phosphor-icons/react";
 import { fetchChampionMap, type ChampionInfo } from "../ddragon";
 import { DRAFT_STEPS, type DraftTeam } from "../lib/draft-order";
 import { ALL_ROLES, rolesOf, type ChampionRole } from "../lib/champion-roles";

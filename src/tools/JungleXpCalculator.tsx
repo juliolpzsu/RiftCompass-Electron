@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { RotateCcw, Undo2 } from "lucide-react";
+import { ArrowCounterClockwise, ArrowUUpLeft } from "@phosphor-icons/react";
 import {
   campXpAtLevel,
   definedCampLevels,
@@ -161,11 +161,11 @@ export function JungleXpCalculator() {
               {route.length > 0 && (
                 <>
                   <button onClick={() => setRoute((prev) => prev.slice(0, -1))} style={miniButtonStyle} title={t("JungleXpCalculator.undo")}>
-                    <Undo2 size={12} />
+                    <ArrowUUpLeft size={12} />
                     {t("JungleXpCalculator.undo")}
                   </button>
                   <button onClick={() => setRoute([])} style={miniButtonStyle} title={t("JungleXpCalculator.reset")}>
-                    <RotateCcw size={12} />
+                    <ArrowCounterClockwise size={12} />
                     {t("JungleXpCalculator.reset")}
                   </button>
                 </>
