@@ -6,11 +6,17 @@
 
 import { app } from "electron";
 import { autoUpdater } from "electron-updater";
+import { existsSync } from "node:fs";
+import * as path from "node:path";
 
 const CHECK_INTERVAL_MS = 4 * 60 * 60 * 1000;
 
 export function startAutoUpdater(): void {
-  if (!app.isPackaged) return;
+  // app-update.yml only exists in installer builds (`npm run dist`/
+  // `release`); the unpacked `--dir` build the desktop shortcut runs is
+  // packaged too (app.isPackaged is true) but has nothing to update from,
+  // so checking there would just log an ENOENT every interval.
+  if (!app.isPackaged || !existsSync(path.join(process.resourcesPath, "app-update.yml"))) return;
 
   // Downloads happen automatically once a new version is found, and get
   // applied on the next app quit — no restart prompt to click through.
