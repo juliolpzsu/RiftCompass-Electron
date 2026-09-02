@@ -569,7 +569,11 @@ export function GoldCalculator() {
                   {savedBuilds === null ? null : savedBuilds.length === 0 ? (
                     <span style={{ fontSize: 12, color: COLORS.muted }}>{t("GoldCalculator.myBuildsEmpty")}</span>
                   ) : (
-                    savedBuilds.map((sb) => (
+                    savedBuilds.map((sb) => {
+                      const total = catalog
+                        ? sb.items.reduce((sum, id) => sum + (catalog.byId[id]?.totalGold ?? 0), 0)
+                        : 0;
+                      return (
                       <div
                         key={sb.id}
                         style={{
@@ -584,6 +588,8 @@ export function GoldCalculator() {
                         <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 12 }}>
                           {sb.name}
                         </span>
+                        <span style={{ fontSize: 11, color: COLORS.gold, flexShrink: 0 }}>{total}</span>
+                        <span style={{ fontSize: 11, color: COLORS.muted, flexShrink: 0 }}>{new Date(sb.createdAt).toLocaleDateString(locale)}</span>
                         <button onClick={() => handleLoadBuild(sb)} style={saveButtonStyle(true)}>
                           {t("GoldCalculator.load")}
                         </button>
@@ -595,7 +601,8 @@ export function GoldCalculator() {
                           <X size={11} />
                         </button>
                       </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               )}

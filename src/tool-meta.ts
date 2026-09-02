@@ -60,4 +60,7 @@ export const TOOLS: ToolMeta[] = [
 // above. Kept here as a sibling constant instead of forcing it into
 // ToolMeta/TOOLS, which are specifically the routes that mirror the web's
 // TOOL_ROUTES order.
-export const COMPARE_PROFILES_ACCENT = "#34d399";
+// Same hex as the web's gem-magenta (globals.css) — Squad Synergy's own
+// accent there. Was a leftover #34d399 (green) that almost duplicated
+// Jungle XP's own gem-emerald in the same grid.
+export const COMPARE_PROFILES_ACCENT = "#c93a9e";

@@ -254,9 +254,23 @@ textarea:focus-visible {
   transition: transform 120ms ease, box-shadow 120ms ease;
 }
 
+/* Same rose brand glow as the web's own ToolCard (an inset ring plus an
+   outer rose-tinted shadow, via box-shadow rather than border-color since
+   this button already sets its own border color inline and inline styles
+   always beat a stylesheet rule without !important) — was a generic black
+   drop shadow with no brand color at all, on the screen every session
+   starts on. */
 .rc-tool-card:not(:disabled):hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 0 1px #e63977 inset, 0 16px 40px -16px #e63977;
+}
+
+.rc-tool-card-icon {
+  transition: transform 200ms ease;
+}
+
+.rc-tool-card:not(:disabled):hover .rc-tool-card-icon {
+  transform: scale(1.1);
 }
 
 /* Specificity note: the generic `button:not(:disabled):active` rule above

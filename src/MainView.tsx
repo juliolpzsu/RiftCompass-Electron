@@ -1542,7 +1542,12 @@ function GridCard({
       {/* Matches the web's own ToolCard (src/components/tool-card.tsx in
           the web repo): the icon renders bare at its accent color, no
           colored square behind it. */}
-      <Icon size={40} color={accent} style={{ width: "clamp(30px, 2.6vw, 40px)", height: "clamp(30px, 2.6vw, 40px)", flexShrink: 0 }} />
+      <Icon
+        size={40}
+        color={accent}
+        className="rc-tool-card-icon"
+        style={{ width: "clamp(30px, 2.6vw, 40px)", height: "clamp(30px, 2.6vw, 40px)", flexShrink: 0 }}
+      />
       <span style={{ fontSize: "clamp(12px, 0.95vw, 14px)", fontWeight: 600, lineHeight: 1.3 }}>{label}</span>
       {/* Still honest about a placeholder tool rather than a broken/fake
           link if `native:false` ever comes back — just a caption instead

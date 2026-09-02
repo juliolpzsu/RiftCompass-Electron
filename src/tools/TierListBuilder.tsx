@@ -16,7 +16,7 @@ import {
 import { SortableContext, rectSortingStrategy, useSortable, arrayMove } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { snapCenterToCursor } from "@dnd-kit/modifiers";
-import { Bookmark, MagnifyingGlass } from "@phosphor-icons/react";
+import { Bookmark, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { fetchChampionMap, toDDragonId, type ChampionInfo } from "../ddragon";
 import { TIERS, TIER_COLORS, type Tier } from "../lib/tier-colors";
 import { ALL_ROLES, rolesOf, primaryRoleOf, type ChampionRole } from "../lib/champion-roles";
@@ -115,7 +115,7 @@ const collisionDetectionStrategy: CollisionDetection = (args) => {
 };
 
 export function TierListBuilder() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const [champions, setChampions] = useState<ChampionInfo[]>([]);
   const championIds = useMemo(() => champions.map((c) => c.internalId), [champions]);
   const championById = useMemo(() => new Map(champions.map((c) => [c.internalId, c])), [champions]);
@@ -391,12 +391,15 @@ export function TierListBuilder() {
             ) : (
               savedTierLists.map((tl) => (
                 <div key={tl.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ flex: 1, fontSize: 13 }}>{tl.name}</span>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {tl.name}
+                  </span>
+                  <span style={{ fontSize: 12, color: COLORS.muted }}>{new Date(tl.createdAt).toLocaleDateString(locale)}</span>
                   <button onClick={() => handleLoadSaved(tl)} style={ghostButtonStyle(false)}>
                     {t("TierList.load")}
                   </button>
-                  <button onClick={() => handleDeleteSaved(tl.id)} style={ghostButtonStyle(false)}>
-                    {t("TierList.delete")}
+                  <button onClick={() => handleDeleteSaved(tl.id)} title={t("TierList.delete")} style={{ ...ghostButtonStyle(false), padding: "6px 8px" }}>
+                    <X size={13} />
                   </button>
                 </div>
               ))
