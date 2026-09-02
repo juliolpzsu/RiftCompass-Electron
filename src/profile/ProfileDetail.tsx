@@ -100,8 +100,7 @@ async function fetchActivityCalendarMonth(
 const summonerSpellIconCache = new Map<string, Record<number, string>>();
 
 // Powers the expanded match scoreboard's spell icons (MatchScoreboard
-// below) — added 2026-08-29 alongside the rest of that section's detail,
-// see its own comment for why.
+// below).
 function useSummonerSpellIcons(ddragonVersion: string): Record<number, string> {
   const [icons, setIcons] = useState<Record<number, string>>(
     () => summonerSpellIconCache.get(ddragonVersion) ?? {},
@@ -524,11 +523,11 @@ function ProfileDetail({
       {/* Paired rows, grouping cards whose natural content height is
           close (a rank card next to another rank card, a compact chart
           next to another compact chart, a taller grid next to a
-          similarly-tall table). ChampionPool+Roadmap are paired here at
-          Julio's request (2026-09-02) — desktop-only, the web keeps
-          those two full-width/stacked, so this one row is a deliberate
-          divergence from web's pairing rather than the mirrored layout
-          the rows above still are. Each card's own internal layout (see
+          similarly-tall table). ChampionPool+Roadmap are paired here on
+          purpose, desktop-only: the web keeps those two full-width/
+          stacked, so that one row is a deliberate divergence from the
+          web rather than the mirrored layout the rows above still are.
+          Don't mirror it back to the web. Each card's own internal layout (see
           cardStyle usage below) still centers its content vertically
           within the row's `stretch`, so any residual height difference
           reads as intentional, not leftover space. */}
@@ -555,8 +554,8 @@ function ProfileDetail({
         <ChampionOverviewCard matches={profile.recentMatches} ddragonVersion={ddragonVersion} />
       </div>
 
-      {/* Paired at Julio's request (2026-09-02) — desktop-only, the web
-          keeps these full-width/stacked. Same auto-fit/340px pattern as
+      {/* Paired on purpose, desktop-only (the web keeps these full-width/
+          stacked, see the comment above). Same auto-fit/340px pattern as
           the calendar+overview row above, since both cards run similarly
           tall (a champion grid vs. a metric-row list). */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: 12 }}>
@@ -1039,9 +1038,9 @@ function ActivityCalendarCard({ matches, puuid, platform }: { matches: RecentMat
       )}
       {monthState.kind === "ok" || isCurrentMonth ? (
         // Sibling of the centered maxWidth:320 grid above, not nested
-        // inside it (Julio, 2026-09-02: was centered along with the grid
-        // instead of sitting flush against the card's own left edge, like
-        // the web version's legend already does — same fix, applied here).
+        // inside it, so the legend sits flush against the card's own left
+        // edge instead of being centered along with the grid (same
+        // structure as the web version's legend).
         <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 10, fontSize: 11, color: COLORS.muted }}>
           <span>{t("ProfileSearch.activityLegendLoss")}</span>
           <span style={{ width: 12, height: 12, borderRadius: 3, background: COLORS.badMild }} />
@@ -1057,11 +1056,10 @@ function ActivityCalendarCard({ matches, puuid, platform }: { matches: RecentMat
 // Real, already-played champions only per role — see
 // profile-analysis.ts::computeChampionPool for why this deliberately
 // never recommends a champion the player hasn't actually played. Leads
-// with a concentration signal (Julio, 2026-09-02: felt useless before —
-// it was just re-listing champion-overview.tsx's top champions, split by
-// role, with less detail) — "62% of your Jungle games on Kayn" is a real
-// question champion-overview.tsx's per-champion table can't answer:
-// how narrow is this role's pool, and is that a ban/counter-pick risk.
+// with a concentration signal rather than re-listing the champion
+// overview's top champions split by role: "62% of your Jungle games on
+// Kayn" answers a question the per-champion table can't, how narrow this
+// role's pool is and whether that's a ban/counter-pick risk.
 const ONE_TRICK_THRESHOLD = 0.66;
 
 function ChampionPoolCard({
@@ -1078,27 +1076,27 @@ function ChampionPoolCard({
   return (
     <div style={cardStyle}>
       <span style={{ fontSize: 12, color: COLORS.muted }}>{t("ProfileSearch.championPool")}</span>
-      <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 10 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 20, marginTop: 12 }}>
         {pools.map((pool) => {
           const icon = positionIconUrl(pool.position);
           const top = pool.champions[0];
           const topShare = top ? top.games / pool.totalGames : 0;
           const isOneTrick = topShare >= ONE_TRICK_THRESHOLD;
           return (
-            <div key={pool.position} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div key={pool.position} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                  {icon ? <img src={icon} alt="" style={{ width: 14, height: 14 }} /> : null}
-                  <span style={{ fontSize: 11, color: COLORS.muted }}>{t(`Profile.positions.${pool.position.toLowerCase()}`)}</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  {icon ? <img src={icon} alt="" style={{ width: 16, height: 16 }} /> : null}
+                  <span style={{ fontSize: 12, color: COLORS.muted }}>{t(`Profile.positions.${pool.position.toLowerCase()}`)}</span>
                 </div>
                 {top ? (
-                  <span style={{ fontSize: 11, color: isOneTrick ? COLORS.gold : COLORS.muted }}>
+                  <span style={{ fontSize: 12, color: isOneTrick ? COLORS.gold : COLORS.muted }}>
                     {t("ProfileSearch.championPoolConcentration", { percent: Math.round(topShare * 100), champion: top.championName })}
                     {isOneTrick ? ` · ${t("ProfileSearch.championPoolOneTrick")}` : ""}
                   </span>
                 ) : null}
               </div>
-              <div style={{ display: "flex", height: 5, width: "100%", overflow: "hidden", borderRadius: 999, background: `${COLORS.muted}26` }}>
+              <div style={{ display: "flex", height: 6, width: "100%", overflow: "hidden", borderRadius: 999, background: `${COLORS.muted}26` }}>
                 {pool.champions.map((c, i) => (
                   <div
                     key={c.championName}
@@ -1106,25 +1104,35 @@ function ChampionPoolCard({
                   />
                 ))}
               </div>
-              <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
                 {pool.champions.map((c) => {
                   const winPct = c.games > 0 ? Math.round((c.wins / c.games) * 100) : 0;
                   return (
-                    <div key={c.championName} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, width: 56 }}>
+                    <div
+                      key={c.championName}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        padding: "8px 14px 8px 8px",
+                        borderRadius: 10,
+                        border: `1px solid ${COLORS.cardBorder}`,
+                        background: "rgba(255,255,255,0.03)",
+                      }}
+                    >
                       <img
                         src={championSquareUrl(ddragonVersion, c.championName)}
                         alt=""
-                        style={{ width: 36, height: 36, borderRadius: 8 }}
+                        style={{ width: 40, height: 40, borderRadius: 9, flexShrink: 0 }}
                       />
-                      <span
-                        style={{ fontSize: 10, fontWeight: 600, maxWidth: 56, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-                        title={c.championName}
-                      >
-                        {c.championName}
-                      </span>
-                      <span style={{ fontSize: 10, color: COLORS.muted }}>
-                        {c.games}G · {winPct}%
-                      </span>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: COLORS.text }} title={c.championName}>
+                          {c.championName}
+                        </span>
+                        <span style={{ fontSize: 11, color: COLORS.muted }}>
+                          {c.games}G · {winPct}%
+                        </span>
+                      </div>
                     </div>
                   );
                 })}
