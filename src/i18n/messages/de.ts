@@ -626,7 +626,8 @@ export const de: Messages = {
     difficultyLabel: "Durchschnittliche Schwierigkeit",
   },
   MetaTierList: {
-    intro: "Champions gerankt nach echter Winrate, aus Ranked Solo/Duo-Matches, die RiftCompass tatsächlich erfasst und ausgewertet hat.",
+    intro: "Champions gerankt nach echter Winrate, aus Ranked-Solo/Duo-Matches, die RiftCompass tatsächlich erfasst und ausgewertet hat, keine Drittanbieter-Quelle und nicht erfunden für Rollen/Champions, zu denen wir noch keine Daten haben.",
+    methodologyNote: "Tiers sind relativ: S ist der bisher bestperformende Ausschnitt der Messungen für diese Rolle, D der schwächste, kein fester Winrate-Grenzwert, da der Datensatz noch klein ist und täglich wächst.",
     noDataForRole: "Für diese Rolle liegen noch nicht genug erfasste Matches vor. Schau später wieder vorbei.",
     dataFromPatch: "Daten aus Patch {patch}; der aktuelle Patch ({current}) hat noch nicht genug Stichproben.",
     chipTooltip: "{rate}% Winrate über {games} erfasste Partien",

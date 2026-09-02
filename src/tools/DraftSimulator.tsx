@@ -203,8 +203,8 @@ export function DraftSimulator() {
                 </button>
               </>
             )}
-            {saveError ? <span style={{ fontSize: 13, color: COLORS.rose }}>{t(`Draft.saveDraftErrors.${saveError}`)}</span> : null}
-            {saveSuccess && !saveOpen ? <span style={{ fontSize: 13, color: COLORS.goodMild }}>{t("Draft.saveDraftSuccess")}</span> : null}
+            {saveError ? <span style={{ fontSize: 13, color: COLORS.destructive }}>{t(`Draft.saveDraftErrors.${saveError}`)}</span> : null}
+            {saveSuccess && !saveOpen ? <span style={{ fontSize: 13, color: COLORS.rose }}>{t("Draft.saveDraftSuccess")}</span> : null}
           </div>
           {listOpen ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 6, borderRadius: 8, border: `1px solid ${COLORS.cardBorder}`, background: `${COLORS.card}66`, padding: 10 }}>

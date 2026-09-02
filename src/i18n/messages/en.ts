@@ -638,7 +638,8 @@ export const en = {
     difficultyLabel: "Average difficulty",
   },
   MetaTierList: {
-    intro: "Champions ranked by real win rate, from ranked solo/duo matches RiftCompass has actually sampled and tracked.",
+    intro: "Champions ranked by real win rate, from ranked solo/duo matches RiftCompass has actually sampled and tracked, not a third-party source, and not fabricated for roles/champions we don't have data for yet.",
+    methodologyNote: "Tiers are relative: S is the best-performing slice of what's been measured for that role so far, D the weakest, not a fixed win-rate cutoff, since the dataset is still small and growing daily.",
     noDataForRole: "Not enough tracked matches for this role yet. Check back as more games get sampled.",
     dataFromPatch: "Data from patch {patch}; the current patch ({current}) doesn't have enough samples yet.",
     chipTooltip: "{rate}% win rate over {games} tracked games",

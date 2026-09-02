@@ -1221,8 +1221,8 @@ export function MapEditor() {
                 </button>
               </>
             )}
-            {mapSaveError ? <span style={{ fontSize: 13, color: THEME.rose }}>{t(`MapEditor.saveMapErrors.${mapSaveError}`)}</span> : null}
-            {mapSaveSuccess && !mapSaveOpen ? <span style={{ fontSize: 13, color: THEME.goodMild }}>{t("MapEditor.saveMapSuccess")}</span> : null}
+            {mapSaveError ? <span style={{ fontSize: 13, color: THEME.destructive }}>{t(`MapEditor.saveMapErrors.${mapSaveError}`)}</span> : null}
+            {mapSaveSuccess && !mapSaveOpen ? <span style={{ fontSize: 13, color: THEME.rose }}>{t("MapEditor.saveMapSuccess")}</span> : null}
           </div>
           {mapListOpen ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 6, borderRadius: 8, border: `1px solid ${THEME.cardBorder}`, background: `${THEME.card}66`, padding: 10 }}>

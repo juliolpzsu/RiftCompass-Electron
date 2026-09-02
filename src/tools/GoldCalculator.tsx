@@ -558,11 +558,11 @@ export function GoldCalculator() {
                   <button onClick={toggleBuildList} style={saveButtonStyle(false)}>
                     {t("GoldCalculator.myBuilds")}
                   </button>
-                  {saved && <span style={{ fontSize: 12, color: COLORS.goodMild }}>{t("GoldCalculator.saveBuildSuccess")}</span>}
+                  {saved && <span style={{ fontSize: 12, color: COLORS.rose }}>{t("GoldCalculator.saveBuildSuccess")}</span>}
                 </div>
               )}
               {saveError && (
-                <span style={{ fontSize: 12, color: COLORS.rose }}>{t(`GoldCalculator.saveBuildErrors.${saveError}`)}</span>
+                <span style={{ fontSize: 12, color: COLORS.destructive }}>{t(`GoldCalculator.saveBuildErrors.${saveError}`)}</span>
               )}
               {buildListOpen && (
                 <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>

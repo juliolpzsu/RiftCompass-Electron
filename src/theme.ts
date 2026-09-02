@@ -14,6 +14,12 @@ export const COLORS = {
   gold: "#c8aa6e",
   goodMild: "#b093c8",
   badMild: "#bd6b80",
+  // Same real red as the web's shadcn --destructive token (dark theme) —
+  // for genuine action failures (a save/network error), never for game
+  // performance. goodMild/badMild stay reserved for win/loss and
+  // above/below target; reusing them for "did this save?" was the actual
+  // bug this token fixes.
+  destructive: "#ff6467",
 } as const;
 
 export const FONT_HEADING = "'Russo One', 'Manrope', sans-serif";

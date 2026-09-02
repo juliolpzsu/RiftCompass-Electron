@@ -259,7 +259,7 @@ export function ChampionPoolBuilder() {
                   ))}
                 </div>
                 {analysis.dominantTag ? (
-                  <p style={{ fontSize: 12, color: "#e0873f", marginTop: 4 }}>
+                  <p style={{ fontSize: 12, color: COLORS.gold, marginTop: 4 }}>
                     {t("ChampionPoolBuilder.dominantTagWarning", { tag: analysis.dominantTag })}
                   </p>
                 ) : null}

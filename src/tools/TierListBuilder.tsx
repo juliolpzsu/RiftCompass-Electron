@@ -370,9 +370,9 @@ export function TierListBuilder() {
                 </>
               )}
               {saveError ? (
-                <span style={{ fontSize: 13, color: COLORS.rose }}>{t(`TierList.saveTierListErrors.${saveError}`)}</span>
+                <span style={{ fontSize: 13, color: COLORS.destructive }}>{t(`TierList.saveTierListErrors.${saveError}`)}</span>
               ) : null}
-              {saved ? <span style={{ fontSize: 13, color: COLORS.goodMild }}>{t("TierList.saveTierListSuccess")}</span> : null}
+              {saved ? <span style={{ fontSize: 13, color: COLORS.rose }}>{t("TierList.saveTierListSuccess")}</span> : null}
             </div>
           ) : (
             <span style={{ fontSize: 13, color: COLORS.muted }}>{t("TierList.loginToSave")}</span>

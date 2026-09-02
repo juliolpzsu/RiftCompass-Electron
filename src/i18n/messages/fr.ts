@@ -626,7 +626,8 @@ export const fr: Messages = {
     difficultyLabel: "Difficulté moyenne",
   },
   MetaTierList: {
-    intro: "Champions classés selon leur taux de victoire réel, à partir des parties classées solo/duo que RiftCompass a réellement échantillonnées et suivies.",
+    intro: "Champions classés par taux de victoire réel, à partir de parties classées solo/duo réellement échantillonnées et suivies par RiftCompass, pas une source tierce, et pas inventé pour les rôles/champions dont nous n'avons pas encore de données.",
+    methodologyNote: "Les tiers sont relatifs : S représente la tranche la plus performante de ce qui a été mesuré jusqu'ici pour ce rôle, D la plus faible, pas un seuil fixe de taux de victoire, puisque le jeu de données est encore petit et croît chaque jour.",
     noDataForRole: "Pas encore assez de parties suivies pour ce rôle. Revenez plus tard.",
     dataFromPatch: "Données du patch {patch} ; le patch actuel ({current}) n'a pas encore assez d'échantillons.",
     chipTooltip: "{rate}% de taux de victoire sur {games} parties suivies",

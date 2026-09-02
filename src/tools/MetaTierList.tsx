@@ -82,6 +82,14 @@ export function MetaTierList() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      {/* Only methodologyNote, not intro — the tool header above this
+          component (MainView.tsx's ToolsIndex.metaTierList.description)
+          already says "real win rate from RiftCompass's own tracked
+          matches"; MetaTierList.intro repeats that near-verbatim. The
+          genuinely new information web's intro+methodologyNote pair adds
+          is the S/D-are-relative-percentiles explanation, which is what
+          methodologyNote alone covers. */}
+      <p style={{ fontSize: 13, color: COLORS.muted, margin: 0 }}>{t("MetaTierList.methodologyNote")}</p>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
         {RANK_TIERS.map((r) => (
           <button key={r} onClick={() => setRank(r)} style={pillStyle(rank === r, "compact")}>

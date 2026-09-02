@@ -626,7 +626,8 @@ export const es: Messages = {
     difficultyLabel: "Dificultad media",
   },
   MetaTierList: {
-    intro: "Campeones clasificados por winrate real, a partir de partidas de Solo/Dúo clasificatoria que RiftCompass ha muestreado y rastreado de verdad.",
+    intro: "Campeones clasificados por winrate real, de partidas de ranked solo/dúo que RiftCompass ha muestreado y registrado de verdad, no una fuente de terceros, y sin inventar datos para posiciones/campeones de los que todavía no tenemos.",
+    methodologyNote: "Los tiers son relativos: S es el tramo con mejor rendimiento de lo medido hasta ahora para esa posición, D el más débil, no un corte de winrate fijo, ya que el dataset todavía es pequeño y crece cada día.",
     noDataForRole: "Todavía no hay suficientes partidas rastreadas para este rol. Vuelve a comprobarlo más adelante.",
     dataFromPatch: "Datos del parche {patch}; el parche actual ({current}) aún no tiene muestras suficientes.",
     chipTooltip: "{rate}% de winrate en {games} partidas rastreadas",
