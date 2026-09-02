@@ -1,6 +1,9 @@
 // Ported from the web app's src/lib/tier-colors.ts — same 5 tiers, same
 // soft-good/soft-bad ramp (src/app/globals.css in the main repo), applied
-// here as real hex + alpha instead of Tailwind utility classes.
+// here as real hex + alpha instead of Tailwind utility classes. Reuses the
+// win/loss tokens as a pure S->D chromatic gradient (hot/dark for S,
+// cool/light for D) — not a judgment of "good"/"bad" despite the token
+// names, so don't read S using SOFT_BAD as a bug.
 export const TIERS = ["S", "A", "B", "C", "D"] as const;
 export type Tier = (typeof TIERS)[number];
 

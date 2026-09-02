@@ -372,7 +372,7 @@ export function TierListBuilder() {
               {saveError ? (
                 <span style={{ fontSize: 13, color: COLORS.rose }}>{t(`TierList.saveTierListErrors.${saveError}`)}</span>
               ) : null}
-              {saved ? <span style={{ fontSize: 13, color: "#4ade80" }}>{t("TierList.saveTierListSuccess")}</span> : null}
+              {saved ? <span style={{ fontSize: 13, color: COLORS.goodMild }}>{t("TierList.saveTierListSuccess")}</span> : null}
             </div>
           ) : (
             <span style={{ fontSize: 13, color: COLORS.muted }}>{t("TierList.loginToSave")}</span>
@@ -718,7 +718,7 @@ const ChampionChip = forwardRef<
         boxShadow: dragging ? "0 8px 20px -6px rgba(0,0,0,0.6)" : undefined,
         ...style,
       }}
-      title={realTier ? `${name} — ${t("TierList.realTierTooltip", { tier: realTier })}` : name}
+      title={realTier ? `${name}: ${t("TierList.realTierTooltip", { tier: realTier })}` : name}
       {...attributes}
       {...listeners}
     >
