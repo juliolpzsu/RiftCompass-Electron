@@ -1,5 +1,6 @@
 import { toDDragonId, type ChampionInfo } from "./ddragon";
 import { rolesOf, type ChampionRole } from "./lib/champion-roles";
+import type { ChampionOverviewStats } from "./lib/profile-analysis";
 
 // Candidate champions per position come from champion-roles.ts's real,
 // curated per-champion lane data — same source the Tier List, Draft
@@ -100,4 +101,129 @@ export function suggestPicks(
   }
 
   return suggestions;
+}
+
+// --- Draft Advisor (main-app screen, not the in-game overlay) ---------
+
+// Same shape /api/v1/champion-matchup returns for one champion: its real
+// 1v1 lane matchup record against a specific, already-known enemy laner.
+export interface LaneMatchupEntry {
+  championName: string;
+  games: number;
+  wins: number;
+  winRate: number;
+}
+
+export interface MatchupSuggestion {
+  champion: ChampionInfo;
+  // Real matchup-specific record when the crawler has one; otherwise the
+  // same champion+role bucket champion-winrates already uses (see
+  // matchupSpecific below) — never absent unless there's truly no sample
+  // at all for this champion in this role.
+  matchupWinRate?: number;
+  matchupGames?: number;
+  matchupSpecific: boolean;
+  personalWinRate?: number;
+  personalGames?: number;
+  // Ranking key only (see combine formula below) — never shown to the
+  // user as if it were an observed win rate, just used to sort and to
+  // pick a 3-tier label.
+  combinedScore: number;
+  tier: "good" | "solid" | "risky";
+}
+
+// Same "trust threshold" idea as the web's MIN_GAMES_FOR_WINRATE: a virtual
+// prior of 20 games at 50/50 pulls a thin sample back toward neutral
+// instead of letting a 2-game 100% record dominate the ranking. Reused as
+// the smoothing constant for both signals for consistency across the
+// project, not because personal and matchup samples are the same size —
+// they rarely are, which is exactly why raw pooling (summing games) would
+// let whichever signal has more games silently drown out the other; each
+// is smoothed toward neutral independently first, then combined.
+const COMBINE_PRIOR_GAMES = 20;
+
+function smoothedRate(wins: number, games: number): number {
+  return (wins + COMBINE_PRIOR_GAMES / 2) / (games + COMBINE_PRIOR_GAMES);
+}
+
+// Log-odds pooling: treat the matchup record and the player's personal
+// record as two independent pieces of evidence about the same question
+// ("is this a good pick right now?") and multiply their odds together
+// (sum their logits) rather than average their raw rates — the standard
+// way to combine two separately-estimated probabilities. With zero games
+// on one side, smoothedRate() returns exactly 0.5 and logit(0.5) = 0, so
+// that side drops out of the sum instead of pulling the result toward 50%.
+function logit(p: number): number {
+  return Math.log(p / (1 - p));
+}
+
+function sigmoid(x: number): number {
+  return 1 / (1 + Math.exp(-x));
+}
+
+// Ranks every real candidate for `position` by a blend of two honest
+// signals: the champion's real winrate against the already-known enemy
+// laner (falling back to its overall winrate for the role when the
+// specific matchup has no sample yet, same fallback shape as the web's
+// getRecommendedBuild), and the player's own real winrate with that
+// champion from their recent match history. A candidate with no sample on
+// either signal is dropped rather than ranked at an uninformative neutral
+// 50% alongside real data.
+export function suggestMatchupPicks(
+  champions: ChampionInfo[],
+  teamPickedChampionIds: number[],
+  position: string,
+  matchups: LaneMatchupEntry[],
+  roleWinrates: ChampionWinrateEntry[],
+  personalOverview: ChampionOverviewStats[],
+  limit = 8,
+): MatchupSuggestion[] {
+  const role = POSITION_TO_ROLE[position];
+  if (!role) return [];
+
+  const candidates = champions.filter((c) => rolesOf(c.internalId)?.includes(role));
+  const pickedIds = new Set(teamPickedChampionIds);
+  const available = candidates.filter((c) => !pickedIds.has(c.id));
+
+  const matchupByInternalId = new Map(matchups.map((m) => [toDDragonId(m.championName), m]));
+  const roleWinrateByInternalId = new Map(
+    roleWinrates.filter((w) => w.role === role).map((w) => [toDDragonId(w.championName), w]),
+  );
+  const personalByInternalId = new Map(personalOverview.map((p) => [toDDragonId(p.championName), p]));
+
+  const scored = available
+    .map((champion) => {
+      const matchup = matchupByInternalId.get(champion.internalId);
+      const roleWide = roleWinrateByInternalId.get(champion.internalId);
+      const personal = personalByInternalId.get(champion.internalId);
+
+      const matchupSpecific = (matchup?.games ?? 0) > 0;
+      const matchupGames = matchupSpecific ? matchup!.games : roleWide?.games;
+      const matchupWins = matchupSpecific ? matchup!.wins : roleWide ? Math.round(roleWide.winRate * roleWide.games) : undefined;
+      const matchupWinRate = matchupSpecific ? matchup!.winRate : roleWide?.winRate;
+
+      const matchupRate = smoothedRate(matchupWins ?? 0, matchupGames ?? 0);
+      const personalRate = smoothedRate(personal?.wins ?? 0, personal?.games ?? 0);
+      const combinedScore = sigmoid(logit(matchupRate) + logit(personalRate));
+
+      return {
+        champion,
+        matchupWinRate,
+        matchupGames,
+        matchupSpecific,
+        personalWinRate: personal ? personal.wins / personal.games : undefined,
+        personalGames: personal?.games,
+        combinedScore,
+        hasSignal: (matchupGames ?? 0) > 0 || (personal?.games ?? 0) > 0,
+      };
+    })
+    .filter((s) => s.hasSignal);
+
+  return scored
+    .sort((a, b) => b.combinedScore - a.combinedScore)
+    .slice(0, limit)
+    .map(({ hasSignal: _hasSignal, ...s }) => ({
+      ...s,
+      tier: s.combinedScore > 0.55 ? "good" : s.combinedScore < 0.45 ? "risky" : "solid",
+    }));
 }

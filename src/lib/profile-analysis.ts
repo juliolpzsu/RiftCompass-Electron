@@ -146,10 +146,18 @@ export interface MatchPerformanceNote {
   /** 0-10, one decimal. */
   score: number;
   scoreSentiment: PerformanceSentiment;
+  /** Per-axis breakdown (farm/vision/kda/killParticipation/damage), for a
+   * full report rather than just the single standout axis above — used by
+   * the post-game report screen. */
+  points: SkillRadarPoint[];
 }
 
-const STRENGTH_THRESHOLD = 110;
-const FOCUS_THRESHOLD = 70;
+// Exported so callers building a full per-axis breakdown (the post-game
+// report screen) can classify every axis with the same real thresholds
+// this file already uses for badges/standout notes, instead of a second
+// hardcoded copy drifting out of sync.
+export const STRENGTH_THRESHOLD = 110;
+export const FOCUS_THRESHOLD = 70;
 
 interface ParticipantStatsInput {
   cs: number;
@@ -185,9 +193,9 @@ export function summarizeParticipantPerformance(
   const score = Math.round((overall / 15) * 10) / 10;
   const scoreSentiment: PerformanceSentiment = overall >= STRENGTH_THRESHOLD ? "good" : overall < FOCUS_THRESHOLD ? "bad" : "neutral";
 
-  if (standout.value >= STRENGTH_THRESHOLD) return { axis: standout.axis, sentiment: "good", score, scoreSentiment };
-  if (standout.value < FOCUS_THRESHOLD) return { axis: standout.axis, sentiment: "bad", score, scoreSentiment };
-  return { axis: "wellRounded", sentiment: "neutral", score, scoreSentiment };
+  if (standout.value >= STRENGTH_THRESHOLD) return { axis: standout.axis, sentiment: "good", score, scoreSentiment, points };
+  if (standout.value < FOCUS_THRESHOLD) return { axis: standout.axis, sentiment: "bad", score, scoreSentiment, points };
+  return { axis: "wellRounded", sentiment: "neutral", score, scoreSentiment, points };
 }
 
 export function summarizeMatchPerformance(match: RecentMatchSummary, tier?: string | null): MatchPerformanceNote {
@@ -387,7 +395,13 @@ export interface ChampionOverviewStats {
 
 const MAX_OVERVIEW_ROWS = 6;
 
-export function computeChampionOverview(matches: RecentMatchSummary[]): ChampionOverviewStats[] {
+// `limit` defaults to the profile summary's top-6 (existing behavior,
+// unchanged for that caller). The draft advisor passes `Infinity` instead —
+// it needs the player's personal winrate for every champion they've
+// recently played in a role, not just their top 6 overall, since a
+// candidate outside the top 6 by games is exactly the kind of pick this
+// feature should still recognize ("you've played this 4 times and won 3").
+export function computeChampionOverview(matches: RecentMatchSummary[], limit = MAX_OVERVIEW_ROWS): ChampionOverviewStats[] {
   const byChampion = new Map<string, ChampionOverviewStats>();
   for (const match of matches) {
     const entry = byChampion.get(match.championName) ?? {
@@ -409,7 +423,7 @@ export function computeChampionOverview(matches: RecentMatchSummary[]): Champion
     entry.minutes += match.durationSeconds / 60;
     byChampion.set(match.championName, entry);
   }
-  return [...byChampion.values()].sort((a, b) => b.games - a.games).slice(0, MAX_OVERVIEW_ROWS);
+  return [...byChampion.values()].sort((a, b) => b.games - a.games).slice(0, limit);
 }
 
 // --- activity-calendar.ts ---

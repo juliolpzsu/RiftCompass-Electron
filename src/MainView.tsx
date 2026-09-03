@@ -21,6 +21,8 @@ import { API_BASE_URL } from "./shared/api";
 import { ProfileScreen } from "./profile/ProfileDetail";
 import { ProfileCompareEntry } from "./profile/ProfileCompare";
 import { parseRiotId, PlatformSelect, type ProfileTarget } from "./profile/ProfileShared";
+import { PostGameReport } from "./profile/PostGameReport";
+import { DraftAdvisor } from "./champselect/DraftAdvisor";
 import { COMPARE_PROFILES_ACCENT, TOOLS, type ToolId, type ToolMeta } from "./tool-meta";
 import { GoldCalculator } from "./tools/GoldCalculator";
 import { WaveTimer } from "./tools/WaveTimer";
@@ -67,7 +69,7 @@ const NATIVE_VIEWS: Record<ToolId, React.ComponentType> = {
 // to bury in a settings page.
 const TITLEBAR_HEIGHT = 40;
 
-type Panel = "tools" | "settings" | "profile" | "compare";
+type Panel = "tools" | "settings" | "profile" | "compare" | "draft" | "postgame";
 
 // Three splash-art accents per tool detail screen — same champions and same
 // top/bottom-same-side + mid-height-opposite-side zigzag riftcompass.com's
@@ -143,6 +145,9 @@ export function MainView() {
   // once for the auto-navigate below) so the tools-home header can show a
   // "back to your profile" chip after the user has navigated away from it.
   const [localIdentity, setLocalIdentity] = useState<LcuIdentity | null>(null);
+  // Set once when the post-game report panel opens (identity + the real
+  // moment the just-finished game started) — see the phase effect below.
+  const [postGameContext, setPostGameContext] = useState<{ identity: LcuIdentity; startedAt: number } | null>(null);
   const openTool = TOOLS.find((tool) => tool.id === openToolId);
 
   function goHome() {
@@ -198,32 +203,54 @@ export function MainView() {
     });
   }, []);
 
-  // Post-game summary: shows on the profile screen from the end of a
-  // match until the next one starts or the window changes. Reuses the
-  // exact same auto-navigate-to-own-profile call the connect-time
-  // auto-center above uses, rather than a separate summary screen: it
-  // already renders identically to a searched profile (same component,
-  // same target shape) and its freshly-refetched match history naturally
-  // puts the just-finished game at the top — no new backend endpoint or
-  // data shape to trust. Edge-triggered on leaving "InProgress" (not a
-  // ref/flag to reset), so it only fires once per
-  // match end and re-arms itself for the next one automatically. Only
+  // Post-game report: a dedicated coaching screen (PostGameReport.tsx),
+  // not just a jump to the profile screen — shown from the end of a match
+  // until the next one starts or the window changes. Edge-triggered on
+  // leaving "InProgress" (not a ref/flag to reset), so it only fires once
+  // per match end and re-arms itself for the next one automatically. Only
   // auto-navigates while idle at the tools home, same as the connect-time
   // guard — never yanks the user out of a tool/settings they're using.
   const localIdentityRef = useRef(localIdentity);
   useEffect(() => {
     localIdentityRef.current = localIdentity;
   }, [localIdentity]);
+  // The real moment the just-finished game started, so PostGameReport can
+  // tell "the freshly-fetched top match" apart from "the same stale top
+  // match from before this game" while Riot's own API catches up.
+  const gameStartedAtRef = useRef<number | null>(null);
   const prevPhaseRef = useRef<string>("None");
   useEffect(() => {
     window.riftcompass.onPhase((phase) => {
       const wasInProgress = prevPhaseRef.current === "InProgress";
+      if (phase === "InProgress" && prevPhaseRef.current !== "InProgress") {
+        gameStartedAtRef.current = Date.now();
+      }
       prevPhaseRef.current = phase;
       if (!wasInProgress || phase === "InProgress") return;
       const identity = localIdentityRef.current;
       if (!identity) return;
       if (panelRef.current === "tools" && !openToolIdRef.current && !profileTargetRef.current) {
-        openProfile({ platform: identity.platform, gameName: identity.gameName, tagLine: identity.tagLine });
+        setPostGameContext({ identity, startedAt: gameStartedAtRef.current ?? Date.now() });
+        setPanel("postgame");
+      }
+    });
+  }, []);
+
+  // Draft Advisor: opens automatically on entering ChampSelect (same idle
+  // guard as the post-game report above), closes automatically on leaving
+  // it regardless of what's on screen — a stale draft recommendation for a
+  // draft that already ended has no reason to stick around.
+  const prevPhaseForDraftRef = useRef<string>("None");
+  useEffect(() => {
+    window.riftcompass.onPhase((phase) => {
+      const enteringChampSelect = phase === "ChampSelect" && prevPhaseForDraftRef.current !== "ChampSelect";
+      const leavingChampSelect = phase !== "ChampSelect" && prevPhaseForDraftRef.current === "ChampSelect";
+      prevPhaseForDraftRef.current = phase;
+      if (enteringChampSelect && panelRef.current === "tools" && !openToolIdRef.current && !profileTargetRef.current) {
+        setPanel("draft");
+      }
+      if (leavingChampSelect && panelRef.current === "draft") {
+        goHome();
       }
     });
   }, []);
@@ -347,6 +374,56 @@ export function MainView() {
                 <ArrowLeft size={15} /> {t("Common.backToTools")}
               </button>
               <ProfileCompareEntry />
+            </div>
+          ) : panel === "draft" ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {/* Same back-to-menu control every other screen has (profile,
+                  compare, every tool). */}
+              <button
+                onClick={goHome}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  alignSelf: "flex-start",
+                  background: "none",
+                  border: "none",
+                  color: COLORS.muted,
+                  fontSize: 13,
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+              >
+                <ArrowLeft size={15} /> {t("Common.backToTools")}
+              </button>
+              <DraftAdvisor identity={localIdentity} />
+            </div>
+          ) : panel === "postgame" && postGameContext ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              {/* Same back-to-menu control every other screen has (profile,
+                  compare, every tool). */}
+              <button
+                onClick={goHome}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  alignSelf: "flex-start",
+                  background: "none",
+                  border: "none",
+                  color: COLORS.muted,
+                  fontSize: 13,
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+              >
+                <ArrowLeft size={15} /> {t("Common.backToTools")}
+              </button>
+              <PostGameReport
+                identity={postGameContext.identity}
+                gameStartedAt={postGameContext.startedAt}
+                onOpenProfile={openProfile}
+              />
             </div>
           ) : openTool ? (
             // No outer cap: a fixed maxWidth here just leaves dead margins
