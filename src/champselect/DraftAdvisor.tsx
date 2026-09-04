@@ -45,7 +45,11 @@ export function DraftAdvisor({ identity }: { identity: LcuIdentity | null }) {
   const [theirTeam, setTheirTeam] = useState<ChampSelectPlayer[]>([]);
   const [localCellId, setLocalCellId] = useState<number | null>(null);
   const [champions, setChampions] = useState<ChampionMaps>(EMPTY_MAPS);
-  const [roleWinrates, setRoleWinrates] = useState<ChampionWinrateEntry[]>([]);
+  // null = not fetched for this champ select yet; [] = fetched, nothing
+  // usable (empty or failed). The distinction matters: an effect keyed on
+  // "list is empty" refetched in a tight loop whenever the API answered
+  // with an empty list or an error, because each `set([])` is a new array.
+  const [roleWinrates, setRoleWinrates] = useState<ChampionWinrateEntry[] | null>(null);
   const [matchups, setMatchups] = useState<LaneMatchupEntry[]>([]);
   const [personalOverview, setPersonalOverview] = useState<ChampionOverviewStats[]>([]);
 
@@ -75,10 +79,15 @@ export function DraftAdvisor({ identity }: { identity: LcuIdentity | null }) {
       });
   }, [phase, champions]);
 
+  // One fetch per champ select: reset on leaving it, fetch once on entering.
   useEffect(() => {
-    if (phase !== "ChampSelect" || roleWinrates.length > 0) return;
+    if (phase !== "ChampSelect") {
+      setRoleWinrates(null);
+      return;
+    }
+    if (roleWinrates !== null) return;
     fetch(`${API_BASE_URL}/api/v1/champion-winrates`)
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((data) => setRoleWinrates(data.winrates ?? []))
       .catch(() => setRoleWinrates([]));
   }, [phase, roleWinrates]);
@@ -126,7 +135,7 @@ export function DraftAdvisor({ identity }: { identity: LcuIdentity | null }) {
     // Both teams, not just mine — a champion already locked by anyone
     // (either side) can't be picked again this game.
     const pickedIds = [...myTeam, ...theirTeam].filter((p) => p.championId).map((p) => p.championId);
-    return suggestMatchupPicks(Object.values(champions.byId), pickedIds, localPlayer.assignedPosition, matchups, roleWinrates, personalOverview);
+    return suggestMatchupPicks(Object.values(champions.byId), pickedIds, localPlayer.assignedPosition, matchups, roleWinrates ?? [], personalOverview);
   }, [champions, myTeam, theirTeam, localPlayer?.assignedPosition, matchups, roleWinrates, personalOverview]);
 
   if (phase !== "ChampSelect") {

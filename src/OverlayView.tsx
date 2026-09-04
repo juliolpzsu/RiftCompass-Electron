@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchChampionMap, mergeLocalizedChampionNames, normalizeChampionName, type ChampionMaps } from "./ddragon";
 import { suggestPicks, type ChampionWinrateEntry } from "./draft-help";
 import { useI18n } from "./i18n";
@@ -447,7 +447,11 @@ export function OverlayView() {
   const [tabHeld, setTabHeld] = useState(false);
   const [skillOrder, setSkillOrder] = useState<SkillOrderEntry[]>([]);
   const [recommendedBuild, setRecommendedBuild] = useState<RecommendedBuild | null>(null);
-  const [championWinrates, setChampionWinrates] = useState<ChampionWinrateEntry[]>([]);
+  // null = not fetched for this champ select yet; [] = fetched, nothing
+  // usable (empty or failed). Keyed on "empty list" this refetched in a
+  // tight loop whenever the API answered empty or errored, because every
+  // `set([])` is a new array (same fix as DraftAdvisor.tsx).
+  const [championWinrates, setChampionWinrates] = useState<ChampionWinrateEntry[] | null>(null);
   const [applyBuildState, setApplyBuildState] = useState<"idle" | "working" | "done" | "error">("idle");
   const requestedPuuids = useRef(new Set<string>());
   // The local player's real solo-queue tier, for the CS/min-vs-elo target —
@@ -584,26 +588,35 @@ export function OverlayView() {
   // progressively during the draft even before puuid is), falling back to
   // the blended bucket server-side when that specific matchup has no
   // sample yet (see getRecommendedBuild's matchupSpecific flag).
+  // Reduced to three strings on purpose: the effects below key on these,
+  // not on myTeam/theirTeam themselves, which the LCU replaces with fresh
+  // arrays on every champ select tick (hover, timer, chat) and would
+  // otherwise refetch the build several times a second.
+  const localPick = useMemo(() => {
+    const local = myTeam.find((p) => p.cellId === localCellId);
+    const role = local?.assignedPosition || undefined;
+    const championName = local?.championId ? champions.byId[local.championId]?.internalId : undefined;
+    const enemy = role ? theirTeam.find((p) => p.assignedPosition === role) : undefined;
+    const enemyChampionName = enemy?.championId ? champions.byId[enemy.championId]?.internalId : undefined;
+    return { role, championName, enemyChampionName };
+  }, [myTeam, theirTeam, localCellId, champions]);
+
   useEffect(() => {
     if (phase !== "ChampSelect" || !overlayModules.autoBuild) {
       setRecommendedBuild(null);
       return;
     }
-    const local = myTeam.find((p) => p.cellId === localCellId);
-    if (!local?.championId || !local.assignedPosition || Object.keys(champions.byId).length === 0) return;
-    const championName = champions.byId[local.championId]?.internalId;
-    if (!championName) return;
+    const { role, championName, enemyChampionName } = localPick;
+    if (!role || !championName) return;
 
-    const enemy = theirTeam.find((p) => p.assignedPosition === local.assignedPosition);
-    const enemyChampionName = enemy?.championId ? champions.byId[enemy.championId]?.internalId : undefined;
-    const params = new URLSearchParams({ champion: championName, role: local.assignedPosition.toUpperCase() });
+    const params = new URLSearchParams({ champion: championName, role: role.toUpperCase() });
     if (enemyChampionName) params.set("enemy", enemyChampionName);
 
     fetch(`${API_BASE_URL}/api/v1/champion-build?${params}`)
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((data) => setRecommendedBuild({ runes: data.runes ?? null, spells: data.spells ?? null, items: data.items ?? null }))
       .catch(() => setRecommendedBuild(null));
-  }, [phase, overlayModules.autoBuild, myTeam, theirTeam, localCellId, champions]);
+  }, [phase, overlayModules.autoBuild, localPick.role, localPick.championName, localPick.enemyChampionName]);
 
   // Real winrate for the pick-suggestion row below (see suggestPicks in
   // draft-help.ts) — fetched once per champ select, not per keystroke, and
@@ -613,9 +626,13 @@ export function OverlayView() {
   // Champion Pool Builder already settled on, not a per-rank breakdown
   // this small overlay card has no room to select.
   useEffect(() => {
-    if (phase !== "ChampSelect" || championWinrates.length > 0) return;
+    if (phase !== "ChampSelect") {
+      setChampionWinrates(null);
+      return;
+    }
+    if (championWinrates !== null) return;
     fetch(`${API_BASE_URL}/api/v1/champion-winrates`)
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((data) => setChampionWinrates(data.winrates ?? []))
       .catch(() => setChampionWinrates([]));
   }, [phase, championWinrates]);
@@ -630,15 +647,15 @@ export function OverlayView() {
       if (phase !== "InProgress") setSkillOrder([]);
       return;
     }
-    const role = myTeam.find((p) => p.cellId === localCellId)?.assignedPosition;
+    const role = localPick.role;
     const player = liveGame.allPlayers.find((p) => isLocalPlayer(p, liveGame.activePlayerName));
     if (!role || !player?.championName) return;
     const params = new URLSearchParams({ champion: player.championName, role: role.toUpperCase() });
     fetch(`${API_BASE_URL}/api/v1/champion-skill-order?${params}`)
-      .then((r) => r.json())
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((data) => setSkillOrder(data.skillOrder ?? []))
       .catch(() => setSkillOrder([]));
-  }, [phase, overlayModules.skillOrder, myTeam, localCellId, liveGame?.activePlayerName]);
+  }, [phase, overlayModules.skillOrder, localPick.role, liveGame?.activePlayerName]);
 
   // Fetched once per session (not per game) — same LCU endpoint the client
   // itself uses for the ranked tab, no reason to refetch every match.
@@ -907,7 +924,7 @@ export function OverlayView() {
                   Object.values(champions.byId),
                   myTeam.filter((p) => p.championId).map((p) => p.championId),
                   localPlayer.assignedPosition,
-                  championWinrates,
+                  championWinrates ?? [],
                 );
                 if (suggestions.length === 0) return null;
                 // Your real lane opponent, if their pick has already been
