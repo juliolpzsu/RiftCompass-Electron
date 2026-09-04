@@ -1,12 +1,14 @@
-// Runs in an isolated context with access to Node/Electron APIs, but the
-// renderer only ever sees what's explicitly exposed below via
-// contextBridge. See src/bridge/index.ts for how
+// Runs sandboxed (windows.ts sets `sandbox: true`): no Node, only the
+// limited `electron` module plus a few builtins, and it is bundled into one
+// file by scripts/bundle-preload.mjs because a sandboxed preload cannot
+// require sibling modules. The renderer only ever sees what's explicitly
+// exposed below via contextBridge. See src/bridge/index.ts for how
 // __electronBridge__ becomes the full window.riftcompass API, and
-// windows.ts's WINDOW_CHANNELS for the window-chrome channel names.
+// window-channels.ts for the window-chrome channel names.
 
 import { contextBridge, ipcRenderer } from "electron";
 import { CMD, EVT } from "../src/bridge/commands";
-import { WINDOW_CHANNELS } from "./windows";
+import { WINDOW_CHANNELS } from "./window-channels";
 
 // src/bridge/index.ts only ever calls invoke/on with a name from CMD/EVT,
 // but that's a renderer-side convention, not a real boundary — nothing

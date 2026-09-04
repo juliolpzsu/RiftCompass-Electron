@@ -19,17 +19,10 @@ let mainWindow: BrowserWindow | null = null;
 let overlayWindow: BrowserWindow | null = null;
 let owOverlayWindow: OverlayBrowserWindow | null = null;
 
-// Frameless-window chrome channels (WindowControls.tsx / preload.ts) —
-// kept separate from src/bridge/commands.ts's CMD/EVT allowlist since
-// this is OS window plumbing, not an app/game feature (see
-// RiftCompassWindowApi's doc comment in src/riftcompass.d.ts).
-export const WINDOW_CHANNELS = {
-  minimize: "window:minimize",
-  toggleMaximize: "window:toggle-maximize",
-  close: "window:close",
-  isMaximized: "window:is-maximized",
-  resized: "window:resized",
-} as const;
+// Re-exported so ipc.ts keeps one import for everything window-related;
+// the definition lives in its own module for the preload bundle's sake.
+import { WINDOW_CHANNELS } from "./window-channels";
+export { WINDOW_CHANNELS };
 
 // Sibling of tsconfig.electron.json's outDir — see package.json's "main".
 const RENDERER_URL = process.env.ELECTRON_RENDERER_URL;
@@ -116,14 +109,13 @@ export function createMainWindow(): BrowserWindow {
       preload: PRELOAD,
       contextIsolation: true,
       nodeIntegration: false,
-      // Electron 20+ sandboxes preload scripts by default, which blocks
-      // even a same-directory `require("./windows")` for the compiled
-      // WINDOW_CHANNELS constants — sandboxed preload only allows a
-      // handful of Electron/Node builtins, not arbitrary local modules.
-      // contextIsolation (above) is the boundary that actually matters:
-      // it keeps the *page* content from ever touching Node, regardless
-      // of this setting — preload.ts is our own trusted code.
-      sandbox: false,
+      // The renderer process runs sandboxed (Chromium's OS-level sandbox,
+      // no Node in the process at all). Only possible because preload.ts
+      // is bundled into one self-contained file (scripts/bundle-preload.mjs)
+      // — a sandboxed preload can't `require` a sibling module, which is
+      // what kept this at `false` before. contextIsolation above remains
+      // the boundary between page content and the preload's privileges.
+      sandbox: true,
     },
   });
   mainWindow.maximize();
@@ -201,7 +193,7 @@ export function createOverlayWindow(): BrowserWindow {
       preload: PRELOAD,
       contextIsolation: true,
       nodeIntegration: false,
-      sandbox: false, // see createMainWindow's identical option for why
+      sandbox: true, // see createMainWindow's identical option
     },
   });
   loadRenderer(overlayWindow, "view=overlay");

@@ -19,7 +19,7 @@ El overlay in-game de una ventana normal no puede pintarse sobre League en modo 
 
 ## Modelo de seguridad
 
-- `contextIsolation: true`, `nodeIntegration: false`. `sandbox: false` solo porque un preload sandboxeado no puede hacer `require()` de módulos locales (ver Gotchas); la barrera real es `contextIsolation`.
+- `contextIsolation: true`, `nodeIntegration: false`, `sandbox: true` (desde 2026-09-04). El sandbox exige que el preload no haga `require()` de módulos locales, así que `scripts/bundle-preload.mjs` (esbuild, parte de `build:electron`) lo empaqueta en un único fichero con el allowlist `CMD`/`EVT` y `electron/window-channels.ts` inlineados; solo `electron` queda externo. Verificado por CDP en el renderer real: `__electronBridge__` y `riftcompassWindow` expuestos, IPC funcionando, `process`/`require` invisibles.
 - `preload.ts` valida cada canal contra el allowlist de `CMD`/`EVT` antes de reenviarlo; `ipc.ts` vuelve a validar lo que importa (`shell_open_external` solo abre `https://riftcompass.com`; `lcu_get` solo sirve GET a las rutas LCU listadas en `RENDERER_READABLE_LCU_PATHS`, el resto de llamadas al LCU viven en el proceso principal detrás de comandos concretos).
 - Ambas ventanas rechazan cualquier navegación fuera del propio renderer y cualquier `window.open` (`lockToOwnRenderer` en `windows.ts`).
 - CSP como cabecera real desde `main.ts` (`applyContentSecurityPolicy`): `'unsafe-eval'`/`'unsafe-inline'` en `script-src` solo en dev (Vite los necesita), nunca en la build empaquetada. `connect-src` limitado a Data Dragon, Community Dragon, riftcompass.com y Sentry.
@@ -41,7 +41,7 @@ El overlay in-game de una ventana normal no puede pintarse sobre League en modo 
 
 - `npm run dev:renderer`: frontend solo en navegador (stubs), puerto 1421.
 - `npm run dev`: app completa (vite + proceso principal).
-- `npm run typecheck`: dos tsconfig (`tsconfig.json` para `src/`, `tsconfig.electron.json` para `electron/`, CommonJS).
+- `npm run typecheck`: dos tsconfig (`tsconfig.json` para `src/`, `tsconfig.electron.json` para `electron/`, CommonJS). `npm run build:electron` = ese `tsc` + `scripts/bundle-preload.mjs`; `dev:electron` lo usa también, así que el preload que corre en dev es el mismo bundle que en la build.
 - `npm run build`, `npm run dist` (instalador NSIS en `release/`), `npm run release` (`electron-builder --publish always`, necesita `GH_TOKEN`).
 - **Acceso directo del escritorio siempre al día**: `RiftCompass.lnk` en el escritorio de Julio apunta a `release/win-unpacked/RiftCompass.exe`, que NO se regenera solo. Tras cualquier cambio en `src/` o `electron/` que se dé por terminado (commit), regenerar ese build con `npm run pack:dir` antes de cerrar la sesión, para que la app que Julio abre desde el escritorio sea siempre la del código actual. Si la app está en ejecución, cerrarla desde el tray (Quit) primero; el exe en uso bloquea la copia. `pack:dir` existe porque `electron-builder --dir` a secas falla siempre aquí con `EPERM` al renombrar `win-unpacked.tmp` (ver Gotchas).
 - Para probar contra el LCU real: lanzar League con `RiotClientServices.exe --launch-product=league_of_legends --launch-patchline=live` (lanzar `LeagueClient.exe` directo da "Acceso denegado" por Vanguard).
@@ -62,7 +62,7 @@ El overlay in-game de una ventana normal no puede pintarse sobre League en modo 
 
 ## Gotchas
 
-- **Preload sandboxeado por defecto** (Electron 20+): un preload sandboxeado no puede hacer `require()` de módulos locales, así que importar `WINDOW_CHANNELS`/`CMD` fallaba en silencio y `window.riftcompass` no se instalaba (todo caía al stub con errores de red falsos). De ahí `sandbox: false`.
+- **Preload sandboxeado** (Electron 20+): un preload sandboxeado no puede hacer `require()` de módulos locales; si `window.riftcompass` deja de instalarse (todo cae al stub con errores de red falsos), lo primero es comprobar que `dist-electron/electron/preload.js` es el bundle de esbuild y no la salida por fichero de `tsc` (`grep require` debe dar solo `electron`). Cualquier módulo nuevo que importe `preload.ts` tiene que estar libre de dependencias de Node, como `window-channels.ts`.
 - **`tsconfig.electron.json` comparte `src/bridge/commands.ts`** con el frontend: su `rootDir` es la raíz del proyecto y `dist-electron/` contiene `electron/main.js` y `src/bridge/commands.js`.
 - **Live Client Data localiza el nombre de un campeón controlado por bot** en el idioma del cliente ("Maestro Yi", "Twisted Fate" con espacio), no en el id de Data Dragon. `ddragon.ts` indexa también por nombre normalizado en el locale real del cliente (`mergeLocalizedChampionNames`, con el `gameClientLocale` que llega en `lcu:identity`).
 - **`FiddleSticks` vs `Fiddlesticks`**: Match-V5/Spectator/crawler escriben `FiddleSticks`; el id de Data Dragon es `Fiddlesticks`. `toDDragonId()` en `ddragon.ts` normaliza; usarlo antes de construir URLs de icono o comparar contra `internalId`.
@@ -78,4 +78,3 @@ El overlay in-game de una ventana normal no puede pintarse sobre League en modo 
 - Confirmar visualmente los splash accents por herramienta (`TOOL_SPLASH_ACCENTS` en `MainView.tsx`) con la app abierta.
 - `artifactName` sin versión en el próximo release (ver Distribución).
 - Con bots en el equipo rival, champ select nunca reporta `championId` para `theirTeam`; comprobar en una partida emparejada con humanos si el oro por carril rival resuelve, y solo entonces investigar como bug.
-- Preload empaquetado con un bundler para poder volver a `sandbox: true`.
